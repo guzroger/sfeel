@@ -1,0 +1,65 @@
+import { EbBillDetailDto } from './ebBillDetail.dto';
+
+export class EbBillDto {
+  billId: number;
+  systemCode: string;
+  cuf: string;
+  cufd: string;
+  billNumber: number;
+  nitEmitter: number;
+  sucursalCode: number;
+  salePointCode: number;
+  dateEmitte: Date;
+  billName: string;
+  documentType: string;
+  billDocument: string;
+  billComplement: string;
+  address: string;
+  clientCode: string;
+  paymentMethod: string;
+  cardNumber: string;
+  amount: number;
+  amountIva: number;
+  amountDiscount: number;
+  amountGiftCard: number;
+  coinCode: string;
+  exchangeRate: number;
+  legend: string;
+  sectorDocumentCode: string;
+  modalityCode: number;
+  emitteType: number;
+  documentTaxCode: number;
+  exceptionDocument: number;
+  billExternalCode: string;
+  billedPeriod: string;
+  billStatusId: number;
+  packageId: number;
+  billNameEmitter: string;
+  municipality: string;
+  receptionCode: string;
+  statusCode: string;
+  statusDescription: string;
+  reasonAnnulationCode: string;
+  cafc: string;
+  email: string;
+  qr: string;
+  note: string;
+  eventId: number;
+  createdAt: Date;
+  user:string;
+  details: EbBillDetailDto[];
+
+  addressBuyer:string;
+  placeDestination:string;
+  codeCountry:string;
+  additionalInformation:string;
+
+  billNumberRef:number;
+  cufRef:string;
+  dateEmitteRef:Date;
+  billIdRef:number;
+  amountTotalOriginal:number;
+  amountTotalReturned:number;
+  amountDiscountCreditDebit:number;
+  amountEffectiveCreditDebit:number;
+}

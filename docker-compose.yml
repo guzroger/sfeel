@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  sfeel_db:
+    image: postgres:13
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: miclave
+      POSTGRES_DB: sfeeldb
+    networks:
+      - sfeeldb_lan
+      
+networks:
+  sfeeldb_lan:
