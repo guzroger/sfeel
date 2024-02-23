@@ -147,6 +147,18 @@ model SynCatalogue {
   @@map("syn_catalogue")
 }
 
+model EbHomologationCatalogue {
+  code String
+  type String
+  systemCode String @map("system_code")
+  nit BigInt
+  codeHomologated String @map("code_homologated")
+  description String?
+  createdAt DateTime @default(now()) @map("created_at")
+  @@id([code, type, systemCode, nit])
+  @@map("eb_homologation_catalogue")
+}
+
 model SynInvoiceLegend {
   activityCode String @map("activity_code")
   description String
@@ -169,6 +181,18 @@ model SynProductService {
 
   @@id([productCode, systemCode, nit, activityCode])
   @@map("syn_product_service")
+}
+
+model EbHomologationProductService {
+  productCode String @map("product_code")
+  systemCode String @map("system_code")
+  nit BigInt 
+  activityCode String @map("activity_code")
+  codeHomologated String @map("code_homologated")
+  description String?
+  createdAt DateTime @default(now()) @map("created_at")
+  @@id([productCode, systemCode, nit, activityCode])
+  @@map("eb_homologation_product_service")
 }
 
 model SynActivity {
@@ -289,6 +313,7 @@ model ebBill {
   amountTotalReturned Float? @map("amount_total_returned")
   amountDiscountCreditDebit Float? @map("amount_discount_credit_debit")
   amountEffectiveCreditDebit Float? @map("amount_effective_credit_debit")
+  user  String?
 
   @@map("eb_bill")
 }

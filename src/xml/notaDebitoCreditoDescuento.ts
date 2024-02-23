@@ -30,7 +30,7 @@ export class NotaDebitoCreditoDescuento {
                 <fechaEmision>${dateEmiite}</fechaEmision>
                 <nombreRazonSocial>${ebBillDto.billName}</nombreRazonSocial>
                 <codigoTipoDocumentoIdentidad>${ebBillDto.documentType}</codigoTipoDocumentoIdentidad>
-                <numeroDocumento>${ebBillDto.billDocument}</numeroDocumento>
+                <numeroDocumento>${ebBillDto.billDocument.trim()}</numeroDocumento>
                 ${
                     ebBillDto.billComplement != null &&
                     ebBillDto.billComplement.length > 0

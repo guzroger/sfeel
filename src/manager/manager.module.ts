@@ -7,11 +7,12 @@ import { ManagerService } from "./manager.service";
 import { PackageBillingService } from "src/billing/packageBilling.service";
 import { ContingencyService } from "src/bill/contingency.service";
 import { MapperService } from "src/bill/dto/mapper.service";
+import { BillingService } from "src/billing/billing.service";
 
 @Module({
     imports:[],
     controllers:[ManagerController],
-    providers:[ParameterService, BillingCodeService, SynchronizationService, ManagerService, PackageBillingService, ContingencyService, MapperService],
+    providers:[ParameterService, BillingCodeService, SynchronizationService, ManagerService, PackageBillingService, ContingencyService, MapperService, BillingService],
     exports:[ParameterService]
 })
 export class ManagerModule {

@@ -30,6 +30,9 @@ import { Parameters } from 'src/common/parameters';
 import { FacturacionService } from 'src/webservice/facturacion.service';
 import { SendNoteDto } from 'src/bill/dto/sendNote.dto';
 import { EbDosificationService } from '../model/ebDosification.service';
+import { EbSectorDocumentDto } from 'src/model/dto/ebSectorDocument.dto';
+import { EbSucursalDto } from '../model/dto/ebSucursal.dto';
+import { ebSectorDocument } from '@prisma/client';
 
 @Injectable()
 export class BillingService {
@@ -55,7 +58,6 @@ export class BillingService {
   async getBills(ebSystemDto:EbSystemDto, sucursalCode:number, salePointSale:number, begin:string, end:string){
     const dateBegin = new Date(begin + "T00:00:00.000Z");
     const dateEnd = new Date(end + "T23:59:59.000Z");
-    console.log(salePointSale);
     if(salePointSale!=null)
       return this.ebBillService.findByDateEmitter( ebSystemDto, Number(sucursalCode), Number(salePointSale), dateBegin, dateEnd);
     else
@@ -96,11 +98,11 @@ export class BillingService {
     try{  
       //We find the type of emission by the point sale
       ebBillDto.systemCode = ebSystemDto.systemCode;
-      const sbSucursalDto = await this.ebSucursalService.findBySucursalCode( ebBillDto.sucursalCode, ebSystemDto.systemId,);
-      const ebSalePointDto = await this.ebSalePointService.findBySalePointCode( ebBillDto.salePointCode != null ? ebBillDto.salePointCode : 0, sbSucursalDto.id );
+      const ebSucursalDto = await this.ebSucursalService.findBySucursalCode( ebBillDto.sucursalCode, ebSystemDto.systemId,);
+      const ebSalePointDto = await this.ebSalePointService.findBySalePointCode( ebBillDto.salePointCode != null ? ebBillDto.salePointCode : 0, ebSucursalDto.id );
       const ebSectorDocumentDto = await this.ebSectorDocumentService.findById(ebBillDto.sectorDocumentCode,);
       ebBillDto.modalityCode = ebSalePointDto.modalityCode;
-      ebBillDto.municipality = sbSucursalDto.municipality;    
+      ebBillDto.municipality = ebSucursalDto.municipality;    
       ebBillDto.documentTaxCode = ebSectorDocumentDto.documentTaxCode;
   
       if(ebBillDto.documentTaxCode==Constants.DocumentTaxCodeBillWithoitIva)
@@ -145,7 +147,7 @@ export class BillingService {
       if(!check)
       {
         ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,ebCuisDto.cuis,);
-        return this.sendBillOffLine( ebBillDto, ebSystemDto, ebCufdDto, ebCuisDto, Constants.EmitterTypeOnline);
+        return this.sendBillOffLine( ebBillDto, ebSystemDto, ebCufdDto, ebCuisDto, Constants.EmitterTypeContingency);
       }
   
       ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,ebCuisDto.cuis,);    
@@ -174,20 +176,9 @@ export class BillingService {
       
   
       //1)  Generate  XML file associated with the envoice according to the economic activity.
-      let xml = '';
-      if(ebBillDto.modalityCode === Constants.ComputerizedOnlineBilling)
-      {
-        xml = XmlDocumentBillParser[ebSectorDocumentDto.methodFec]( ebBillDto, sbSucursalDto, );
-      }
-      else{
-        xml = XmlDocumentBillParser[ebSectorDocumentDto.methodFe]( ebBillDto, sbSucursalDto,);
-      }    
-      //2)     Firmar el archivo obtenido conforme estándar XMLDSig (sólo en el caso de la Modalidad Electrónica en Línea).
-      if(ebBillDto.modalityCode = Constants.ElectronicOnlineBilling)
-      {
-        xml = await this.signerXmlService.signerBillXml( xml, ebSystemDto,);
-      }
-      
+      //2)     Firmar el archivo obtenido conforme estándar XMLDSig (sólo en el caso de la Modalidad Electrónica en Línea).  
+      const xml = await this.createBillXml(ebSystemDto, ebBillDto, ebSectorDocumentDto, ebSucursalDto, );
+    
       //3)     Validar contra el XSD asociado.
   
       //4)     Comprimir el archivo XML en formato Gzip, mismo que debe ser enviado en la etiqueta archivo.
@@ -253,7 +244,6 @@ export class BillingService {
       }
     }
     catch(e){
-      console.log(e);
       if(e.status == 502 ){
         let dateEmiite = ebBillDto.dateEmitte.toISOString();
         dateEmiite= dateEmiite.replace('Z', '');
@@ -270,7 +260,7 @@ export class BillingService {
 
         const ebCuisDto = await this.billingCodeService.getCuis( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,);
         const ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,ebCuisDto.cuis,);
-        return this.sendBillOffLine( ebBillDto, ebSystemDto, ebCufdDto, ebCuisDto, Constants.EmitterTypeOnline);
+        return this.sendBillOffLine( ebBillDto, ebSystemDto, ebCufdDto, ebCuisDto, Constants.EmitterTypeContingency);
       }
       ebBillDto.statusCode = String(e.status);
       ebBillDto.statusDescription = e.message;
@@ -287,6 +277,25 @@ export class BillingService {
     return sendBillResponseDto;
   }
 
+  async createBillXml(ebSystemDto:EbSystemDto,  ebBillDto:EbBillDto, ebSectorDocumentDto:EbSectorDocumentDto, ebSucursalDto: EbSucursalDto){
+    //1)  Generate  XML file associated with the envoice according to the economic activity.
+    let xml = '';
+    if(ebBillDto.modalityCode === Constants.ComputerizedOnlineBilling)
+    {
+      xml = XmlDocumentBillParser[ebSectorDocumentDto.methodFec]( ebBillDto, ebSucursalDto, );
+    }
+    else{
+      xml = XmlDocumentBillParser[ebSectorDocumentDto.methodFe]( ebBillDto, ebSucursalDto,);
+    }    
+    //2)     Firmar el archivo obtenido conforme estándar XMLDSig (sólo en el caso de la Modalidad Electrónica en Línea).
+    if(ebBillDto.modalityCode === Constants.ElectronicOnlineBilling)
+    {
+      xml = await this.signerXmlService.signerBillXml( xml, ebSystemDto,);
+    }
+    
+    return xml;
+  }
+  
   async changeStatusAdjustedBill(ebBillDto:EbBillDto){
     ebBillDto.billStatusId = Constants.BillStatusAdjusted;
     this.ebBillService.update(ebBillDto);
@@ -307,7 +316,9 @@ export class BillingService {
       createEventDto.sucursalCode = ebBillDto.sucursalCode;
       createEventDto.salePointCode = ebBillDto.salePointCode;
       
-      await this.contingencyService.createEvent(createEventDto);
+      const e = await this.contingencyService.createEvent(createEventDto);
+      if(e.event && e.event.eventId)
+        ebBillDto.eventId= e.event.eventId;
       return false;
     }
 
@@ -322,7 +333,9 @@ export class BillingService {
       createEventDto.sucursalCode = ebBillDto.sucursalCode;
       createEventDto.salePointCode = ebBillDto.salePointCode;
       
-      await this.contingencyService.createEvent(createEventDto);
+      const e = await this.contingencyService.createEvent(createEventDto);
+      if(e.event && e.event.eventId)
+        ebBillDto.eventId= e.event.eventId;
       return false;
     }
 
@@ -331,6 +344,9 @@ export class BillingService {
 
   async sendBillOffLine( ebBillDto: EbBillDto, ebSystemDto: EbSystemDto, ebCufdDto:EbCufdDto, ebCuisDto:EbCuisDto, emitteType:number): Promise<SendBillResponseDto> {
     
+    const ebSucursalDto = await this.ebSucursalService.findBySucursalCode( ebBillDto.sucursalCode, ebSystemDto.systemId,);    
+    const ebSectorDocumentDto = await this.ebSectorDocumentService.findById(ebBillDto.sectorDocumentCode,);
+
     ebBillDto.emitteType = emitteType;
     ebBillDto.note = Parameters.noteOffLine;    
     
@@ -359,8 +375,11 @@ export class BillingService {
     ebBillDto.cuf = cuf;
     ebBillDto.cufd = ebCufdDto.cufd;
     ebBillDto.qr = this.getQr( ebBillDto.nitEmitter, ebBillDto.cuf, ebBillDto.billNumber, );
+    
+    const xml = await this.createBillXml(ebSystemDto, ebBillDto, ebSectorDocumentDto, ebSucursalDto);  
 
     let ebBillDtoSave = await this.ebBillService.create(ebBillDto); 
+    this.ebBillFileService.saveXml(ebBillDtoSave.billId, xml);
     
     sendBillResponseDto.statusCode = "908";
     sendBillResponseDto.statusDescription = "Documento fuera de linea";

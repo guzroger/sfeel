@@ -58,6 +58,7 @@ export class WsFacturacionCodigosService {
             </siat:cuis>
             </soapenv:Body>
         </soapenv:Envelope>`;
+        
     return this.soapRequestService.callService(
       this.URL_WS_FS,
       xml,
@@ -104,6 +105,7 @@ export class WsFacturacionCodigosService {
                   </siat:cufd>
                 </soapenv:Body>
             </soapenv:Envelope>`;
+            
     return this.soapRequestService.callService(
       this.URL_WS_FS,
       xml,

@@ -81,7 +81,8 @@ export class EbBillService {
         amountTotalReturned: ebBillDto.amountTotalReturned,
         amountDiscountCreditDebit: ebBillDto.amountDiscountCreditDebit,
         amountEffectiveCreditDebit: ebBillDto.amountEffectiveCreditDebit,
-        billIdRef: ebBillDto.billIdRef
+        billIdRef: ebBillDto.billIdRef,
+        user: ebBillDto.user
       },
     });
 
@@ -165,7 +166,8 @@ export class EbBillService {
         amountTotalReturned: ebBillDto.amountTotalReturned,
         amountDiscountCreditDebit: ebBillDto.amountDiscountCreditDebit,
         amountEffectiveCreditDebit: ebBillDto.amountEffectiveCreditDebit,
-        billIdRef: ebBillDto.billIdRef
+        billIdRef: ebBillDto.billIdRef,
+        user: ebBillDto.user
       },
     });
 
@@ -382,7 +384,7 @@ async getBillWithoutPackage(ebSystemDto:EbSystemDto, sucursalCode:number, salePo
     ebBillDto.addressBuyer = ebBill.addressBuyer;
     ebBillDto.placeDestination = ebBill.placeDestination ;
     ebBillDto.codeCountry = ebBill.codeCountry ;
-    ebBillDto.additionalInformation = ebBill.placeDestination ;
+    ebBillDto.additionalInformation = ebBill.additionalInformation ;
 
     ebBillDto.billNumberRef = ebBill.billNumberRef ;
     ebBillDto.cufRef = ebBill.cufRef ;
@@ -392,7 +394,7 @@ async getBillWithoutPackage(ebSystemDto:EbSystemDto, sucursalCode:number, salePo
     ebBillDto.amountTotalReturned = ebBill.amountTotalReturned ;
     ebBillDto.amountDiscountCreditDebit = ebBill.amountDiscountCreditDebit ;
     ebBillDto.amountEffectiveCreditDebit = ebBill.amountEffectiveCreditDebit ;
-
+    ebBillDto.user = ebBill.user;
 
     if (details != null && details.length > 0) {
       ebBillDto.details = details.map((item) => {

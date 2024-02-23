@@ -31,7 +31,7 @@ export class FacturaComercialExportaciónPrecioVenta {
             <codigoTipoDocumentoIdentidad>${
               data.documentType
             }</codigoTipoDocumentoIdentidad>
-            <numeroDocumento>${data.billDocument}</numeroDocumento>
+            <numeroDocumento>${data.billDocument.trim()}</numeroDocumento>
             ${
               data.billComplement
                 ? `<complemento>${data.billComplement}</complemento>`
@@ -46,7 +46,7 @@ export class FacturaComercialExportaciónPrecioVenta {
             <codigoPais>${data.countryCode}</codigoPais>
             <codigoMetodoPago>${data.paymentMethod}</codigoMetodoPago>
             ${
-              data.cardNumber
+              data.cardNumber != null && data.cardNumber != ''
                 ? `<numeroTarjeta>${data.cardNumber}</numeroTarjeta>`
                 : '<numeroTarjeta xsi:nil="true"/>'
             }
@@ -148,7 +148,7 @@ export class FacturaComercialExportaciónPrecioVenta {
             <codigoTipoDocumentoIdentidad>${
               data.documentType
             }</codigoTipoDocumentoIdentidad>
-            <numeroDocumento>${data.billDocument}</numeroDocumento>
+            <numeroDocumento>${data.billDocument.trim()}</numeroDocumento>
             ${
               data.billComplement
                 ? `<complemento>${data.billComplement}</complemento>`
@@ -163,7 +163,7 @@ export class FacturaComercialExportaciónPrecioVenta {
             <codigoPais>${data.countryCode}</codigoPais>
             <codigoMetodoPago>${data.paymentMethod}</codigoMetodoPago>
             ${
-              data.cardNumber
+              data.cardNumber != null && data.cardNumber != ''
                 ? `<numeroTarjeta>${data.cardNumber}</numeroTarjeta>`
                 : '<numeroTarjeta xsi:nil="true"/>'
             }

@@ -31,11 +31,11 @@ export class FacturaPrevalorada {
                 <codigoTipoDocumentoIdentidad>${
                   data.documentType
                 }</codigoTipoDocumentoIdentidad>
-                <numeroDocumento>${data.billDocument}</numeroDocumento>
+                <numeroDocumento>${data.billDocument.trim()}</numeroDocumento>
                 <codigoCliente>${data.clientCode}</codigoCliente>
                 <codigoMetodoPago>${data.paymentMethod}</codigoMetodoPago>
                 ${
-                  data.cardNumber
+                  data.cardNumber != null && data.cardNumber != ''
                     ? `<numeroTarjeta>${data.cardNumber}</numeroTarjeta>`
                     : '<numeroTarjeta xsi:nil="true"/>'
                 }
@@ -99,11 +99,11 @@ export class FacturaPrevalorada {
             <codigoTipoDocumentoIdentidad>${
               data.documentType
             }</codigoTipoDocumentoIdentidad>
-            <numeroDocumento>${data.billDocument}</numeroDocumento>
+            <numeroDocumento>${data.billDocument.trim()}</numeroDocumento>
             <codigoCliente>${data.clientCode}</codigoCliente>
             <codigoMetodoPago>${data.paymentMethod}</codigoMetodoPago>
             ${
-              data.cardNumber
+              data.cardNumber != null && data.cardNumber != ''
                 ? `<numeroTarjeta>${data.cardNumber}</numeroTarjeta>`
                 : '<numeroTarjeta xsi:nil="true"/>'
             }

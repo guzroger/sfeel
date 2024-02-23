@@ -27,6 +27,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { MensajesListDto } from "src/bill/dto/mensajesList.dto";
 import { MapperService } from "src/bill/dto/mapper.service";
 import { Parameters } from "src/common/parameters";
+import { BillingService } from "./billing.service";
 
 
 @Injectable()
@@ -46,6 +47,7 @@ export class PackageBillingService {
         private ebPackageFileService: EbPackageFileService,
         private appCertificateService: AppCertificateService,
         private mapper:MapperService,
+        private billingService:BillingService,
         private prismaService:PrismaService){}
 
     async createPackages(ebSystemDto:EbSystemDto, sucursalCode:number, salePointCode:number, emitteType:number, sectorDocumentCode:string){
@@ -161,9 +163,9 @@ export class PackageBillingService {
         var mapXmls = new Map();
         var mapBills = new Map();
        
-
+        
         await Promise.all(ebPackageBill.bills.map( async (bill) => {
-            
+
             //const ebBillDto =  await this.ebBillService.findById(bill.billId, true);
             const ebBillDto =  bill;
             ebBillDto.exceptionDocument = 1;
@@ -215,19 +217,8 @@ export class PackageBillingService {
                 ebBillDto.note = Parameters.noteOffLine;    
                 
             //1)  Generate  XML file associated with the envoice according to the economic activity.
-            let xml = '';
-            if(ebBillDto.modalityCode === Constants.ComputerizedOnlineBilling)
-            {
-                xml = XmlDocumentBillParser[ebSectorDocumentDto.methodFec]( ebBillDto, sbSucursalDto, );
-            }
-            else{
-                xml = XmlDocumentBillParser[ebSectorDocumentDto.methodFe]( ebBillDto, sbSucursalDto,);
-            }              
             //2)     Firmar el archivo obtenido conforme estándar XMLDSig (sólo en el caso de la Modalidad Electrónica en Línea).
-            if(ebBillDto.modalityCode = Constants.ElectronicOnlineBilling)
-            {
-                xml = this.signerXmlService.signerBillXmlWithCert( xml, ebSystemDto, primaryKey, publicKey);
-            }
+            const xml = await this.billingService.createBillXml(ebSystemDto, ebBillDto, ebSectorDocumentDto, sbSucursalDto);
             
             pack.entry({name: ebBillDto.cuf}, xml);
 
@@ -261,7 +252,7 @@ export class PackageBillingService {
        await this.ebPackageFileService.saveFile(buffer, ebPackageBill.packageId);
        ebPackageBill.cufd = ebCufdDto.cufd;
        //we save xml and bills
-       for (let [key, value] of mapBills) {            
+       for (let [key, value] of mapBills) {                        
             await this.ebBillFileService.saveXml(value.billId, mapXmls.get(key));
             await this.ebBillService.update(value);
         }
@@ -273,7 +264,7 @@ export class PackageBillingService {
             response = await service.recepcionMasivaFactura(ebPackageBill, ebSystemDto, ebCuisDto.cuis, dataBase64, hash, ebPackageBill.modalityCode==Constants.ElectronicOnlineBilling?ebSectorDocumentDto.urlWsFe:ebSectorDocumentDto.urlWsFec);
        else
             response = await service.recepcionPaqueteFactura(ebPackageBill, ebSystemDto, ebCuisDto.cuis, dataBase64, hash, ebPackageBill.modalityCode==Constants.ElectronicOnlineBilling?ebSectorDocumentDto.urlWsFe:ebSectorDocumentDto.urlWsFec);
-            
+
         let tag = 'ns2:recepcionPaqueteFacturaResponse'
         if(ebPackageBill.emitteType===Constants.EmitterTypeMassive) 
             tag = 'ns2:recepcionMasivaFacturaResponse'

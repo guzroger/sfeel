@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { CataloguqeService } from './catalogue.service';
 import { ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
 import { ParameterService } from "src/common/parameter.service";
@@ -16,12 +16,21 @@ export class CataloqueController {
     })
     @ApiParam({ name : "type"})
     @ApiParam({ name : "nit"})
-    @Get('catalogue/:type/:nit')
+    @Get(['catalogue/:type/:nit', 'catalogue/:type/:nit/:homologated'])
     async catalogue(@Param() params: any){
-        if(params.type==='ProductService')
-            return this.cataloguqeService.getProductService(params.nit);
+        if(params.homologated && params.homologated==='homologated'){
+            if(params.type==='ProductService')
+                return this.cataloguqeService.getProductServiceHomologate(params.nit);
+            
+            return this.cataloguqeService.getCatalogueHomologate(params.nit, params.type);
+        }
+        else{
+            if(params.type==='ProductService')
+                return this.cataloguqeService.getProductService(params.nit);
+            
+            return this.cataloguqeService.getCatalogue(params.nit, params.type);
+        }
         
-        return this.cataloguqeService.getCatalogue(params.nit, params.type);
     }
 
     @Get('catalogueType')
@@ -38,6 +47,16 @@ export class CataloqueController {
     @Get('test')
     async test(){
         return this.healthService.isConnectionOnLine();
+    }
+
+    @ApiParam({ name : "type"})
+    @ApiParam({ name : "nit"})
+    @Post('catalogue/:type/:nit/homologacion')
+    async catalogueHomologacion(@Param() params: any, @Body() body:any ){
+        if(params.type==='ProductService')
+            return this.cataloguqeService.homologateProductService(params.nit, body.activityCode, body.code, body.codeHomologated, body.description);
+        
+        return this.cataloguqeService.homologateCatalogue(params.nit, params.type, body.code, body.codeHomologated, body.description);
     }
 
 }

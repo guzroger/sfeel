@@ -36,7 +36,7 @@ export class FacturaCompraVenta {
                           ebBillDto.documentType
                         }</codigoTipoDocumentoIdentidad>
                         <numeroDocumento>${
-                          ebBillDto.billDocument
+                          ebBillDto.billDocument.trim()
                         }</numeroDocumento>
                         ${
                           ebBillDto.billComplement != null &&
@@ -108,6 +108,9 @@ export class FacturaCompraVenta {
   }
 
     static facturaComputarizadaCompraVenta(ebBillDto: EbBillDto, ebSucursalDto:EbSucursalDto):string{
+        let dateEmiite = ebBillDto.dateEmitte.toISOString();
+        dateEmiite= dateEmiite.replace('Z', '');
+
         const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <facturaComputarizadaCompraVenta xsi:noNamespaceSchemaLocation="facturaComputarizadaCompraVenta.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                 <cabecera>
@@ -117,7 +120,7 @@ export class FacturaCompraVenta {
                 }</razonSocialEmisor>
                 <municipio>${ebSucursalDto.municipality}</municipio>
                 <telefono>${ebSucursalDto.phone}</telefono>
-                <numeroFactura>${ebBillDto.billName}</numeroFactura>
+                <numeroFactura>${ebBillDto.billNumber}</numeroFactura>
                 <cuf>${ebBillDto.cuf}</cuf>
                 <cufd>${ebBillDto.cufd}</cufd>
                 <codigoSucursal>${ebBillDto.sucursalCode}</codigoSucursal>
@@ -127,12 +130,12 @@ export class FacturaCompraVenta {
                     ? `<codigoPuntoVenta>${ebBillDto.salePointCode}</codigoPuntoVenta>`
                     : '<codigoPuntoVenta xsi:nil="true"/>'
                 }
-                <fechaEmision>2021-10-07T09:01:24.178</fechaEmision>
+                <fechaEmision>${dateEmiite}</fechaEmision>
                 <nombreRazonSocial>${ebBillDto.billName}</nombreRazonSocial>
                 <codigoTipoDocumentoIdentidad>${
                   ebBillDto.documentType
                 }</codigoTipoDocumentoIdentidad>
-                <numeroDocumento>${ebBillDto.billDocument}</numeroDocumento>
+                <numeroDocumento>${ebBillDto.billDocument.trim()}</numeroDocumento>
                 ${
                   ebBillDto.billComplement != null
                     ? `<complemento>${ebBillDto.billComplement}</complemento>`
@@ -141,7 +144,7 @@ export class FacturaCompraVenta {
                 <codigoCliente>${ebBillDto.clientCode}</codigoCliente>
                 <codigoMetodoPago>${ebBillDto.paymentMethod}</codigoMetodoPago>
                 ${
-                  ebBillDto.cardNumber != null
+                  ebBillDto.cardNumber != null && ebBillDto.cardNumber != ''
                     ? `<numeroTarjeta>${ebBillDto.cardNumber}</numeroTarjeta>`
                     : '<numeroTarjeta xsi:nil="true"/>'
                 }
@@ -169,10 +172,10 @@ export class FacturaCompraVenta {
                     : '<codigoExcepcion xsi:nil="true"/>'
                 }
                 ${
-                  ebBillDto.cafc != null
+                  ebBillDto.cafc != null && ebBillDto.cafc.length > 0
                     ? `<cafc>${ebBillDto.cafc}</cafc>`
                     : '<cafc xsi:nil="true"/>'
-                }
+                }               
                 <leyenda>${ebBillDto.legend}</leyenda>
                 <usuario>${ebBillDto.user}</usuario>
                 <codigoDocumentoSector>1</codigoDocumentoSector>

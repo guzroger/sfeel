@@ -207,6 +207,7 @@ export class MapperService {
         ebBillDto.billedPeriod = sendBillDto.billData.billedPeriod;
         ebBillDto.cafc = sendBillDto.billData.cafc;
         ebBillDto.email = sendBillDto.customer.email;
+        ebBillDto.user = sendBillDto.billData.user;
 
         if(sendBillDto.billDataAditional){
             ebBillDto.addressBuyer = sendBillDto.billDataAditional.addressBuyer;

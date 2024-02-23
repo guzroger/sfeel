@@ -42,12 +42,19 @@ export class SoapRequestService {
               err.response.data,
               { explicitArray: false },
               function (err, results) {
-                const data = JSON.stringify(results);
-                const jsonData = JSON.parse(data);
+                if(typeof results !== 'undefined'){
+                  const data = JSON.stringify(results);
+                  const jsonData = JSON.parse(data);
+                  
+                  jsonData['soapResponse'] = results;
+                  jsonData['soapRequest'] = xml;
+                  resolve(jsonData);
+                }
+                else{
+                  reject( new HttpException("SoapException: " + err, 502));
+                }
                 
-                jsonData['soapResponse'] = results;
-                jsonData['soapRequest'] = xml;
-                resolve(jsonData);
+                
               },
             );
           }

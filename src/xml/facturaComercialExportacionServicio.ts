@@ -31,7 +31,7 @@ export class FacturaExportacionServicio {
               <codigoTipoDocumentoIdentidad>${
                 data.documentType
               }</codigoTipoDocumentoIdentidad>
-              <numeroDocumento>${data.billDocument}</numeroDocumento>
+              <numeroDocumento>${data.billDocument.trim()}</numeroDocumento>
               ${
                 data.billComplement
                   ? `<complemento>${data.billComplement}</complemento>`
@@ -43,7 +43,7 @@ export class FacturaExportacionServicio {
                 <codigoPais>${data.codeCountry}</codigoPais>
                 <codigoMetodoPago>${data.paymentMethod}</codigoMetodoPago>
                 ${
-                  data.cardNumber
+                  data.cardNumber != null && data.cardNumber != ''
                     ? `<numeroTarjeta>${data.cardNumber}</numeroTarjeta>`
                     : '<numeroTarjeta xsi:nil="true"/>'
                 }
@@ -55,7 +55,7 @@ export class FacturaExportacionServicio {
                     data.amount.toFixed(2)
                   }</montoTotalMoneda>
                 <informacionAdicional>${
-                  data.additionalInformation
+                  data.additionalInformation?data.additionalInformation:''
                 }</informacionAdicional>
                 ${
                   data.amountDiscount
@@ -126,7 +126,7 @@ export class FacturaExportacionServicio {
       <codigoTipoDocumentoIdentidad>${
         data.documentType
       }</codigoTipoDocumentoIdentidad>
-      <numeroDocumento>${data.billDocument}</numeroDocumento>
+      <numeroDocumento>${data.billDocument.trim()}</numeroDocumento>
       ${
         data.billComplement
           ? `<complemento>${data.billComplement}</complemento>`
@@ -138,7 +138,7 @@ export class FacturaExportacionServicio {
         <codigoPais>${data.codeCountry}</codigoPais>
         <codigoMetodoPago>${data.paymentMethod}</codigoMetodoPago>
         ${
-          data.cardNumber
+          data.cardNumber != null && data.cardNumber != ''
             ? `<numeroTarjeta>${data.cardNumber}</numeroTarjeta>`
             : '<numeroTarjeta xsi:nil="true"/>'
         }
