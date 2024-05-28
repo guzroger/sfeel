@@ -5,7 +5,6 @@ import { EbSystemDto } from "src/model/dto/ebSystem.dto";
 import { EbBillService } from "src/model/ebBill.service";
 import { EbEventService } from "src/model/ebEvent.service";
 import { EbPackageBillService } from "src/model/ebPackageBill.service";
-import { XmlDocumentBillParser } from "src/xml/xmlDocumentBillParser";
 import { EbSectorDocumentService } from "src/model/ebSectorDocument.service";
 import { EbSucursalService } from "src/model/ebSucursal.service";
 import { EbSalePointService } from "src/model/ebSalePoint.service";

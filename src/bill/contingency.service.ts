@@ -60,6 +60,8 @@ export class ContingencyService {
 
                 
         }
+        const ebSucursalDto = await this.ebSucursalService.findBySucursalCode( createEventDto.sucursalCode, ebSystemDto.systemId,);
+        const ebSalePointDto = await this.ebSalePointService.findBySalePointCode( createEventDto.salePointCode != null ? createEventDto.salePointCode : 0, ebSucursalDto.id );
 
         const ebEventDto = new EbEventDto();
         ebEventDto.systemCode = ebSystemDto.systemCode;
@@ -78,7 +80,8 @@ export class ContingencyService {
         if(createEventDto.eventType>=5 && createEventDto.cafc)
             ebEventDto.cafc = createEventDto.cafc;
         else if(createEventDto.eventType>=5){
-            const ebDosificationDto = await this.ebDosificationService.findValid(ebSystemDto.systemCode, ebSystemDto.nit, createEventDto.sectorDocumentCode, "CAFC");
+            const ebDosificationDto = await this.ebDosificationService.findValid(ebSystemDto.systemCode, ebSystemDto.nit, 
+                createEventDto.sectorDocumentCode, "CAFC", ebSalePointDto?ebSalePointDto.modalityCode:null);
             if(ebDosificationDto)
                 ebEventDto.cafc = ebDosificationDto.code;
         }

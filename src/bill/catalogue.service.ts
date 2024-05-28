@@ -109,4 +109,16 @@ export class CataloguqeService {
             return this.ebHomologationProductServiceService.update(ebHomologationProductServiceDto);
 
     }
+
+    async deleteHomologateProductService(nit:number,  codeHomologated:string){
+        const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit(Parameters.codigoSistema, nit);
+
+        this.ebHomologationProductServiceService.delete( ebSystemDto.systemCode, ebSystemDto.nit, codeHomologated);
+    }
+
+
+    async deleteHomologateCatalogue(nit:number, codeHomologated:string, type:string){
+        const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit(Parameters.codigoSistema, nit);
+        this.ebHomologationCatalogueService.delete(codeHomologated, ebSystemDto.systemCode, ebSystemDto.nit, type);
+    }
 }

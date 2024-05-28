@@ -45,6 +45,10 @@ export class BillDetail {
   amountDiscount: number;
   @ApiProperty()
   subTotal: number;
+  @ApiProperty()
+  taxable: string;
+  @ApiProperty()
+  typeDetail: string;
 }
 
 export class Bill {
@@ -100,6 +104,20 @@ export class BillDataAditional {
   codeCountry: string;
   @ApiProperty()
   additionalInformation: string;  
+  @ApiProperty()
+  meterNumber:string;
+  @ApiProperty()
+  beneficiarioLey1886:string;
+  @ApiProperty()
+  montoDescuentoLey1886:number;
+  @ApiProperty()
+  montoDescuentoTarifaDignidad:number;
+  @ApiProperty()
+  tasaAseo:number;
+  @ApiProperty()
+  tasaAlumbrado:number;
+  @ApiProperty()
+  otrasTasas:number;
 }
 
 export class SendBillDto {

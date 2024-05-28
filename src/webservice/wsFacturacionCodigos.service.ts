@@ -131,7 +131,7 @@ export class WsFacturacionCodigosService {
                         <codigoSucursal>${codigoSucursal}</codigoSucursal>
                         <cuis>${cuis}</cuis>
                         <nit>${ebSystemDto.nit}</nit>
-                        <nitParaVerificacion>${nitVerificar}</nitParaVerificacion>
+                        <nitParaVerificacion>${nitVerificar.trim()}</nitParaVerificacion>
                       </SolicitudVerificarNit>
                   </siat:verificarNit>
                 </soapenv:Body>

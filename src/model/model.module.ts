@@ -23,6 +23,7 @@ import { EbPackageFileService } from "./ebPackageFile.service";
 import { EbDosificationService } from "./ebDosification.service";
 import { EbHomologationCatalogueService } from "./ebHomologationCatalogue.service";
 import { EbHomologationProductServiceService } from "./ebHomologationProductService.service";
+import { SeUserService } from "./seUser.service";
 
 @Global()
 @Module({
@@ -51,7 +52,8 @@ import { EbHomologationProductServiceService } from "./ebHomologationProductServ
     EbPackageFileService,
     EbDosificationService,
     EbHomologationCatalogueService,
-    EbHomologationProductServiceService
+    EbHomologationProductServiceService,
+    SeUserService
   ],
   exports: [
     EbCuisService,
@@ -76,7 +78,8 @@ import { EbHomologationProductServiceService } from "./ebHomologationProductServ
     EbPackageFileService,
     EbDosificationService,
     EbHomologationCatalogueService,
-    EbHomologationProductServiceService
+    EbHomologationProductServiceService,
+    SeUserService
   ],
 })
 export class ModelModule {}

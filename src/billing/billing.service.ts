@@ -32,7 +32,12 @@ import { SendNoteDto } from 'src/bill/dto/sendNote.dto';
 import { EbDosificationService } from '../model/ebDosification.service';
 import { EbSectorDocumentDto } from 'src/model/dto/ebSectorDocument.dto';
 import { EbSucursalDto } from '../model/dto/ebSucursal.dto';
-import { ebSectorDocument } from '@prisma/client';
+import { BillPageOptionsDto } from 'src/bill/dto/billPageOptions.dto';
+import { DocumentBillService } from './document-bill.service';
+import { SendMailDto } from 'src/common/dto/mail.interface';
+import { MailerService } from '../common/mailer.service';
+import { ConfigService } from '@nestjs/config';
+
 
 @Injectable()
 export class BillingService {
@@ -53,8 +58,15 @@ export class BillingService {
     private ebBillFileService:EbBillFileService,
     private ebSystemService:EbSystemService,
     private ebDosificationService:EbDosificationService,
+    private documentBillService:DocumentBillService,
+    private mailerService:MailerService,
+    private configService:ConfigService
   ) {}
   
+  findAll(billPageOptionsDto:BillPageOptionsDto, ebSystemDto:EbSystemDto) {
+    return  this.ebBillService.findAll(billPageOptionsDto, ebSystemDto);
+  }
+
   async getBills(ebSystemDto:EbSystemDto, sucursalCode:number, salePointSale:number, begin:string, end:string){
     const dateBegin = new Date(begin + "T00:00:00.000Z");
     const dateEnd = new Date(end + "T23:59:59.000Z");
@@ -110,7 +122,9 @@ export class BillingService {
   
       if (ebBillDto.emitteType == Constants.EmitterTypeOnline)
         ebBillDto.dateEmitte = await this.synDateHourService.sisdate( ebSystemDto.systemCode, ebSystemDto.nit,);
-  
+      if(!ebBillDto.dateEmitte)
+        ebBillDto.dateEmitte = await this.synDateHourService.sisdate( ebSystemDto.systemCode, ebSystemDto.nit,);
+      
       //We get the CUIS
       const ebCuisDto = await this.billingCodeService.getCuis( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,);
       let ebCufdDto = null;
@@ -155,7 +169,7 @@ export class BillingService {
       //we set the document exception, If NIT not valid = 1
       ebBillDto.exceptionDocument = 0;
       if (ebBillDto.documentType === Constants.DocumentTypeNit) {
-        const verificarNit = await this.billingCodeService.verificarNit( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.modalityCode, ebCuisDto.cuis, ebBillDto.billDocument,);        
+        const verificarNit = await this.billingCodeService.verificarNit( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.modalityCode, ebCuisDto.cuis, ebBillDto.billDocument.trim(),);        
         if (!verificarNit) ebBillDto.exceptionDocument = 1;
       }
   
@@ -454,6 +468,17 @@ export class BillingService {
     }
   }
 
+  async getPdfBill(ebSystemDto: EbSystemDto, billId:number){
+    const ebBillDto = await this.ebBillService.findById(billId, true);
+
+    if(!ebBillDto)
+      throw new NotFoundException("Bill data not found");
+    
+    const ebSucursalDto = await this.ebSucursalService.findBySucursalCode( ebBillDto.sucursalCode, ebSystemDto.systemId,);
+    return this.documentBillService.getBillPdf(ebBillDto, ebSystemDto, ebSucursalDto);
+
+  }
+
   async billStatus( billId:number){
     
     const ebBillDto = await this.ebBillService.findById(billId);
@@ -596,6 +621,29 @@ export class BillingService {
     }
 
     await this.ebTransactionService.create(ebTransactionDto);
+  }
+
+  async sendMail(ebSystemDto: EbSystemDto, billId:number){
+    const ebBillDto = await this.ebBillService.findById(billId, true);
+
+    const ebSucursalDto = await this.ebSucursalService.findBySucursalCode( ebBillDto.sucursalCode, ebSystemDto.systemId,);
+    const bill = await this.documentBillService.getBillPdf(ebBillDto, ebSystemDto, ebSucursalDto);
+    const iBillFileDto = await this.ebBillFileService.findById(billId);
+
+    const dto: SendMailDto = {
+      from: { name: this.configService.get<string>('APP_NAME'), address: this.configService.get<string>('DEFAULT_MAIL_FROM')},
+      recipients: [ { name: ebBillDto.billName,  address: ebBillDto.email }],
+      subject: "Factura " + this.configService.get<string>('APP_NAME'), 
+      html: 'Sistema de facturación', 
+      attachments: [ {filename: billId + ".pdf" , content:  bill.bill ,     encoding: 'base64'},
+                     {filename: billId + ".xml" , content:  iBillFileDto.xml  }      ]
+
+    }
+    const resp = await this.mailerService.sendMail(dto);
+
+    return {
+      "response": resp.response
+    }
   }
 
   getQr(nit: number, cuf: string, numero: number): string {

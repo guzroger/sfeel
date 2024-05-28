@@ -8,4 +8,5 @@ export class EbDosificationDto {
     type:string;
     systemCode:string;
     nit:number; 
+    modalityCode:number;
 }

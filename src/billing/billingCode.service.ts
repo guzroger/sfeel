@@ -67,13 +67,7 @@ export class BillingCodeService {
     return ebCuisDto;
   }
   
-  async getCuis(
-    ebSystemDto: EbSystemDto,
-    codigoSucursal: number,
-    codigoPuntoVenta: number,
-    codigoModalidad: number,
-    outputDate: Date,
-  ): Promise<EbCuisDto> {
+  async getCuis( ebSystemDto: EbSystemDto,  codigoSucursal: number,  codigoPuntoVenta: number, codigoModalidad: number,  outputDate: Date, ): Promise<EbCuisDto> {
     const ebCuisDto = await this.ebCuisService.findByExpirationDate(ebSystemDto, codigoSucursal,codigoPuntoVenta,  outputDate);
     
     if (ebCuisDto != null) return ebCuisDto;
@@ -178,18 +172,9 @@ export class BillingCodeService {
     cuis: string,
     nitVerificar: string,
   ): Promise<boolean> {
-    const verificarNitResponse =
-      await this.wsFacturacionCodigosService.verificarNit(
-        ebSystemDto,
-        codigoSucursal,
-        codigoModalidad,
-        cuis,
-        nitVerificar,
-      );
-    if (
-      verificarNitResponse['ns2:verificarNitResponse'].RespuestaVerificarNit
-        .mensajesList.codigo === '986'
-    )
+    const verificarNitResponse = await this.wsFacturacionCodigosService.verificarNit(ebSystemDto, codigoSucursal, codigoModalidad,cuis,nitVerificar);
+    console.log(verificarNitResponse);
+    if (verificarNitResponse['ns2:verificarNitResponse'].RespuestaVerificarNit.mensajesList.codigo === '986')
       return true;
     return false;
   }

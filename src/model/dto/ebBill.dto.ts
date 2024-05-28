@@ -62,4 +62,20 @@ export class EbBillDto {
   amountTotalReturned:number;
   amountDiscountCreditDebit:number;
   amountEffectiveCreditDebit:number;
+
+  ajusteNoSujetoIva:number;
+  detalleAjusteNoSujetoIva:string;
+  ajusteSujetoIva:number;
+  detalleAjusteSujetoIva:string;
+  otrosPagosNoSujetoIva:number;
+  detlleOtrosPagosNoSujetoIva:string;
+
+  meterNumber:string;
+  beneficiarioLey1886:string;
+  montoDescuentoLey1886:number;
+  montoDescuentoTarifaDignidad:number;
+  tasaAseo:number;
+  tasaAlumbrado:number;
+  otrasTasas:number;
+  studentName:string;
 }

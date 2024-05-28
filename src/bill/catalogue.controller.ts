@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
 import { CataloguqeService } from './catalogue.service';
 import { ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
 import { ParameterService } from "src/common/parameter.service";
 import { HealthService } from '../common/health.service';
+import { Type } from 'class-transformer';
 
 @ApiTags('cat')
 @Controller("cat")
@@ -57,6 +58,18 @@ export class CataloqueController {
             return this.cataloguqeService.homologateProductService(params.nit, body.activityCode, body.code, body.codeHomologated, body.description);
         
         return this.cataloguqeService.homologateCatalogue(params.nit, params.type, body.code, body.codeHomologated, body.description);
+    }
+
+
+    @ApiParam({ name : "type"})
+    @ApiParam({ name : "nit"})
+    @ApiParam({ name : "id"})
+    @Delete('catalogue/:type/:nit/homologated/:id')
+    async deleteHomologacion(@Param() params: any) {
+        if(params.type==='ProductService')
+            return this.cataloguqeService.deleteHomologateProductService(params.nit, params.id);
+        
+        return this.cataloguqeService.deleteHomologateCatalogue(params.nit, params.id, params.type);
     }
 
 }

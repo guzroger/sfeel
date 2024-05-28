@@ -8,6 +8,7 @@ import { SignerXmlService } from './signerXml.service';
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthService } from './health.service';
 import { HttpModule } from '@nestjs/axios';
+import { MailerService } from './mailer.service';
 
 
 @Global()
@@ -19,8 +20,9 @@ import { HttpModule } from '@nestjs/axios';
     PrismaService,
     LoggerInterceptor,
     SignerXmlService,
-    HealthService
+    HealthService,
+    MailerService
   ],
-  exports: [SoapRequestService, ParameterService, LoggerInterceptor, SignerXmlService, HealthService],
+  exports: [SoapRequestService, ParameterService, LoggerInterceptor, SignerXmlService, HealthService, MailerService],
 })
 export class CommonModule {}

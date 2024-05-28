@@ -7,10 +7,15 @@ import { FacturacionService } from './facturacion.service';
 import { WsFacturacionElectronicaService } from './wsFacturacionElectronica.service';
 import { WsFacturacionDocumentoAjusteService } from './wsFacturacionDocumentoAjusteService';
 import { WsFacturacionOperacionesService } from './wsFacturacionOperaciones.service';
+import { WsFacturacionServiciosBasicos } from './wsFacturacionServiciosBasicos.service';
 
 @Global()
 @Module({
-  providers: [WsFacturacionCodigosService, WsFacturacionSincronizacionService,WsFacturacionCompraVentaService, WsFacturacionElectronicaService, WsFacturacionDocumentoAjusteService, WsEventosSignificativos, FacturacionService, WsFacturacionOperacionesService],
-  exports: [WsFacturacionCodigosService, WsFacturacionSincronizacionService, WsFacturacionCompraVentaService, WsFacturacionElectronicaService, WsFacturacionDocumentoAjusteService, WsEventosSignificativos, FacturacionService, WsFacturacionOperacionesService],
+  providers: [WsFacturacionCodigosService, WsFacturacionSincronizacionService,WsFacturacionCompraVentaService, 
+    WsFacturacionElectronicaService, WsFacturacionDocumentoAjusteService, WsEventosSignificativos, FacturacionService, 
+    WsFacturacionOperacionesService, WsFacturacionServiciosBasicos],
+  exports: [WsFacturacionCodigosService, WsFacturacionSincronizacionService, WsFacturacionCompraVentaService, 
+    WsFacturacionElectronicaService, WsFacturacionDocumentoAjusteService, WsEventosSignificativos, FacturacionService, 
+    WsFacturacionOperacionesService, WsFacturacionServiciosBasicos],
 })
 export class WebServiceModule {}

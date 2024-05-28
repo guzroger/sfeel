@@ -1,7 +1,7 @@
 import { EbBillDto } from "src/model/dto/ebBill.dto";
-import { SendBillDto } from "./sendBill.dto";
+import { SendBillDto } from "../../billing/dto/sendBill.dto";
 import { EbBillDetailDto } from "src/model/dto/ebBillDetail.dto";
-import { BillDetail } from './sendBill.dto';
+import { BillDetail } from '../../billing/dto/sendBill.dto';
 import { EbSystemDto } from "src/model/dto/ebSystem.dto";
 import { ConflictException, Injectable } from "@nestjs/common";
 import { SynProductServiceService } from "src/model/synProductService.service";
@@ -87,6 +87,8 @@ export class MapperService {
             ebBillDetailDto.subTotal = item.subTotal;
             ebBillDetailDto.codeTransactionDetail = 1;
             ebBillDetailDto.numberItem = item.order;
+            ebBillDetailDto.taxable = item.taxable;
+            ebBillDetailDto.typeDetail = item.typeDetail;
 
             return ebBillDetailDto;    
         });
@@ -208,18 +210,53 @@ export class MapperService {
         ebBillDto.cafc = sendBillDto.billData.cafc;
         ebBillDto.email = sendBillDto.customer.email;
         ebBillDto.user = sendBillDto.billData.user;
+        ebBillDto.studentName = sendBillDto.billData.studentName;
 
         if(sendBillDto.billDataAditional){
             ebBillDto.addressBuyer = sendBillDto.billDataAditional.addressBuyer;
             ebBillDto.placeDestination = sendBillDto.billDataAditional.placeDestination;
             ebBillDto.codeCountry = sendBillDto.billDataAditional.codeCountry;
-            ebBillDto.additionalInformation = sendBillDto.billDataAditional.additionalInformation;        
+            ebBillDto.additionalInformation = sendBillDto.billDataAditional.additionalInformation;     
+            
+            ebBillDto.meterNumber = sendBillDto.billDataAditional.meterNumber;
+            ebBillDto.beneficiarioLey1886 = sendBillDto.billDataAditional.beneficiarioLey1886;
+            ebBillDto.montoDescuentoLey1886 =sendBillDto.billDataAditional.montoDescuentoLey1886;
+            ebBillDto.montoDescuentoTarifaDignidad =sendBillDto.billDataAditional.montoDescuentoTarifaDignidad;
+            ebBillDto.tasaAseo = sendBillDto.billDataAditional.tasaAseo;
+            ebBillDto.tasaAlumbrado = sendBillDto.billDataAditional.tasaAlumbrado;
+            ebBillDto.otrasTasas = sendBillDto.billDataAditional.otrasTasas;
         }
         
 
         ebBillDto.details =  await Promise.all( sendBillDto.bill.billDetail.map(  async item =>  {
-            const productService = await this.synProductServiceService.findByProductCode(item.productCodeSin,Parameters.codigoSistema , sendBillDto.business.nit );
-            return  this.mapEbBillDetailDto(item, productService.activityCode);
+            
+            if(item.typeDetail)    
+            {
+                const ebBillDetailDto = new EbBillDetailDto;
+                ebBillDetailDto.economicActivity = '-1';
+                ebBillDetailDto.productCodeSin = '-1';
+                ebBillDetailDto.productCode = '-1';
+                ebBillDetailDto.description = item.description;
+                ebBillDetailDto.quantity = 1;
+                ebBillDetailDto.measureCode = '-1';
+                ebBillDetailDto.unitPrice = item.subTotal;
+                ebBillDetailDto.amountDiscount = 0;
+                ebBillDetailDto.subTotal = item.subTotal;
+                ebBillDetailDto.typeDetail = item.typeDetail;
+
+                if( item.typeDetail==='AJUSTE_SUJETO_IVA')
+                    ebBillDetailDto.taxable = 'Y';
+                else
+                    ebBillDetailDto.taxable = 'N';    
+
+                return ebBillDetailDto;
+            }
+            else{
+                const productService = await this.synProductServiceService.findByProductCode(item.productCodeSin,Parameters.codigoSistema , sendBillDto.business.nit );
+                return  this.mapEbBillDetailDto(item, productService.activityCode);
+            }
+
+            
         }));
 
         this.setLegend(ebBillDto, ebSystemDto);
@@ -277,6 +314,14 @@ export class MapperService {
         ebBillDetailDto.subTotal = billDetail.subTotal;
         //ebBillDetailDto.serieNumber = billDetail;
         //ebBillDetailDto.imeiNumber:string
+
+        if(billDetail.taxable)
+            ebBillDetailDto.taxable = billDetail.taxable;
+        else
+            ebBillDetailDto.taxable = 'Y';
+
+        if(billDetail.typeDetail)
+            ebBillDetailDto.typeDetail = billDetail.typeDetail;
 
         return ebBillDetailDto;
     }

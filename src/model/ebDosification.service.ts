@@ -7,7 +7,7 @@ import { EbDosificationDto } from './dto/ebDosification.dto';
 export class EbDosificationService {
     constructor(private prismaService: PrismaService) {}
 
-    async findValid(systemCode:string, nit:number,sectorDocumentCode:string, type:string ):Promise<EbDosificationDto>{
+    async findValid(systemCode:string, nit:number,sectorDocumentCode:string, type:string, modalityCode:number ):Promise<EbDosificationDto>{
         const event = await this.prismaService.ebDosification.findFirst(
             {
                 where: {
@@ -15,7 +15,9 @@ export class EbDosificationService {
                     nit: nit,
                     sectorDocumentCode: sectorDocumentCode,
                     status: Status.ACTIVE,
-                    type:type
+                    type:type,
+                    OR: [  { modalityCode: 0  },
+                           { modalityCode: modalityCode} ]
                 },
                 orderBy: [ { current: 'desc'}]
             }
@@ -67,6 +69,7 @@ export class EbDosificationService {
         ebDosificationDto.type = ebDosification.type;
         ebDosificationDto.nit = Number(ebDosification.nit);
         ebDosificationDto.systemCode = ebDosification.systemCode;
+        ebDosificationDto.modalityCode = ebDosification.modalityCode;
 
         return ebDosificationDto
     }

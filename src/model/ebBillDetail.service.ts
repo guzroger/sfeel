@@ -36,7 +36,9 @@ export class EbBillDetailService {
         serieNumber: ebBillDetailDto.serieNumber,
         imeiNumber: ebBillDetailDto.imeiNumber,
         codeTransactionDetail: ebBillDetailDto.codeTransactionDetail,
-        numberItem:ebBillDetailDto.numberItem
+        numberItem:ebBillDetailDto.numberItem,
+        taxable:ebBillDetailDto.taxable,
+        typeDetail:ebBillDetailDto.typeDetail
       },
     });
 
@@ -73,7 +75,9 @@ export class EbBillDetailService {
         serieNumber: ebBillDetailDto.serieNumber,
         imeiNumber: ebBillDetailDto.imeiNumber,
         codeTransactionDetail: ebBillDetailDto.codeTransactionDetail,
-        numberItem:ebBillDetailDto.numberItem
+        numberItem:ebBillDetailDto.numberItem,
+        taxable:ebBillDetailDto.taxable,
+        typeDetail:ebBillDetailDto.typeDetail
       },
     });
 
@@ -127,6 +131,8 @@ export class EbBillDetailService {
 
     ebBillDetailDto.codeTransactionDetail = ebBillDetail.codeTransactionDetail;
     ebBillDetailDto.numberItem = ebBillDetail.numberItem;
+    ebBillDetailDto.taxable = ebBillDetail.taxable;
+    ebBillDetailDto.typeDetail = ebBillDetail.typeDetail;
 
     return ebBillDetailDto;
   }

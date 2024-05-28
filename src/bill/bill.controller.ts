@@ -1,14 +1,14 @@
 import { BadRequestException, Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { BillingService } from '../billing/billing.service';
-import { SendBillDto } from './dto/sendBill.dto';
+import { SendBillDto } from '../billing/dto/sendBill.dto';
 import { EbSystemService } from 'src/model/ebSystem.service';
-import { ParameterService } from 'src/common/parameter.service';
 import { Constants } from 'src/common/constants.enum';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SendBillResponseDto } from './dto/sendBillResponse.dto';
 import { MapperService } from './dto/mapper.service';
 import { Parameters } from 'src/common/parameters';
 import { SendNoteDto } from './dto/sendNote.dto';
+import { BillPageOptionsDto } from './dto/billPageOptions.dto';
 
 @ApiTags('bill')
 @Controller('bill')
@@ -17,6 +17,8 @@ export class BillController {
     private billingService: BillingService,
     private ebSystemService: EbSystemService,    
     private mapper:MapperService
+    
+    
   ) {}
   
   @ApiOperation({
@@ -46,6 +48,21 @@ export class BillController {
       throw new BadRequestException();  
 
     return this.billingService.getBills(ebSystemDto, query.sucursalCode, query.salePointCode, query.dateBegin, query.dateEnd);
+  } 
+
+
+  @ApiOperation({
+    summary: 'Get list bills page',
+    description: 'Method for Get list bills',
+  })
+  @ApiParam({ name : "nit"})
+  @Get('page/:nit')  
+  async getBillsPage(@Query() billPageOptionsDto:BillPageOptionsDto,  @Param() param:any){
+    const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit(
+      Parameters.codigoSistema, param.nit,
+    );
+
+    return this.billingService.findAll(billPageOptionsDto, ebSystemDto);
   } 
 
   
@@ -166,12 +183,24 @@ export class BillController {
 
 
   @ApiOperation({
+    summary: 'Get xml Bill',
+    description: 'Method for get the xml of bill',
+  })
+  @ApiParam({ name : "id"})
+  @ApiParam({ name : "nit"})
+  @Get('pdf/:nit/:id')
+  async getBillPdf(@Param() param:any){
+    const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit( Parameters.codigoSistema,param.nit,);
+    return this.billingService.getPdfBill(ebSystemDto, param.id);
+  }
+
+  @ApiOperation({
     summary: 'Get status Bill',
     description: 'Method for get the status of bill',
   })
   @ApiParam({ name : "id"})
   @Get("status/:id")
-  async getBillStatus(@Param() param:any){
+  getBillStatus(@Param() param:any){
     return this.billingService.billStatus(param.id);
   }
 
@@ -181,11 +210,19 @@ export class BillController {
   })
   @ApiParam({ name : "id"})
   @Put("status/:id")
-  async updateBillStatus(@Param() param:any){
+  updateBillStatus(@Param() param:any){
     return this.billingService.updateBillStatus(param.id);
   }
 
- 
+  
+  @Post("sendMail/:nit/:id")
+  @ApiParam({ name : "id"})
+  @ApiParam({ name : "nit"})
+  async sendMail(@Param() param:any){
+    const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit( Parameters.codigoSistema,param.nit,);
+    return this.billingService.sendMail(ebSystemDto, param.id);
+
+  }
 
 }
 

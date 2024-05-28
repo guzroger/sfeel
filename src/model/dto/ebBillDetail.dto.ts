@@ -16,4 +16,7 @@ export class EbBillDetailDto {
 
   codeTransactionDetail:number;
   numberItem:number;
+
+  taxable:string;
+  typeDetail:string;
 }

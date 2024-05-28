@@ -6,6 +6,7 @@ import { WebServiceModule } from "./webservice/webservice.module";
 import { ModelModule } from "./model/model.module";
 import { BillModule } from "./bill/bill.module";
 import { ManagerModule } from "./manager/manager.module";
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { ManagerModule } from "./manager/manager.module";
     ModelModule,
     BillModule,
     ManagerModule,
-    
+    AuthModule
   ],
   providers: []
 })

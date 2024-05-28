@@ -7,6 +7,8 @@ import { FacturaPrevaloradaSDCF } from "./facturaPrevaloradaSDCF";
 import { FacturaExportacionServicio } from "./facturaComercialExportacionServicio";
 import { NotaDebitoCredito } from "./notaDebitoCredito";
 import { NotaDebitoCreditoDescuento } from "./notaDebitoCreditoDescuento";
+import { FacturaServiciosBasicos } from "./facturaServiciosBasicos";
+import { FacturaSectorEducativo } from "./facturaSectorEducativo";
 
 export class XmlDocumentBillParser {
     static facturaElectronicaCompraVenta(ebBillDto: EbBillDto, ebSucursalDto:EbSucursalDto):string{
@@ -67,5 +69,68 @@ export class XmlDocumentBillParser {
         return NotaDebitoCreditoDescuento.notaDebitoCreditoComputarizada(ebBillDto, ebSucursalDto);
     }
 
+    static facturaElectronicaEducacion(ebBillDto: EbBillDto, ebSucursalDto:EbSucursalDto):string{
+        return FacturaSectorEducativo.facturaElectronicaEducacion(ebBillDto, ebSucursalDto);
+    }
+
+    static facturaComputarizadaEducacion(ebBillDto: EbBillDto, ebSucursalDto:EbSucursalDto):string{
+        return FacturaSectorEducativo.facturaComputarizadaEducacion(ebBillDto, ebSucursalDto);
+    }
+
+    static facturaElectronicaServiciosBasicos(ebBillDto: EbBillDto, ebSucursalDto:EbSucursalDto):string{
+        
+        ebBillDto = this.fixedEbBillDto(ebBillDto);
+        return FacturaServiciosBasicos.facturaElectronicaServiciosBasicos(ebBillDto, ebSucursalDto);
+    }
+
+    static facturaComputarizadaServiciosBasicos(ebBillDto: EbBillDto, ebSucursalDto:EbSucursalDto):string{
+        ebBillDto = this.fixedEbBillDto(ebBillDto);
+        return FacturaServiciosBasicos.facturaComputarizadaServiciosBasicos(ebBillDto, ebSucursalDto);
+    }
+
+    private static fixedEbBillDto(ebBillDto: EbBillDto){
+        const ebBillDetail = Array();
+        let ajusteNoSujetoIva = 0;
+        let detalleAjusteNoSujetoIva = "";
+        let ajusteSujetoIva = 0;
+        let detalleAjusteSujetoIva = "";
+        let otrosPagosNoSujetoIva = 0;
+        let detlleOtrosPagosNoSujetoIva = "";
+        ebBillDto.details.forEach((item) => {
+            if((item.taxable || item.taxable === 'Y') && !item.typeDetail){
+                ebBillDetail.push(item);
+            }
+            else if(item.typeDetail === 'AJUSTE_NO_SUJETO_IVA') {
+                ajusteNoSujetoIva = ajusteNoSujetoIva + item.subTotal;
+                if(detalleAjusteNoSujetoIva.length>0)
+                    detalleAjusteNoSujetoIva= detalleAjusteNoSujetoIva + ',';
+                detalleAjusteNoSujetoIva = detalleAjusteNoSujetoIva + '"' + item.description + '":' + item.subTotal;
+            }
+            else if(item.typeDetail === 'AJUSTE_SUJETO_IVA') {
+                ajusteSujetoIva = ajusteSujetoIva + item.subTotal;
+                if(detalleAjusteSujetoIva.length>0)
+                    detalleAjusteSujetoIva= detalleAjusteSujetoIva + ',';
+                detalleAjusteSujetoIva = detalleAjusteSujetoIva + '"' + item.description + '":' + item.subTotal;
+            }
+            else if(item.typeDetail === 'OTROS_PAGOS_NO_SUJETO_IVA') {
+                otrosPagosNoSujetoIva = otrosPagosNoSujetoIva + item.subTotal;
+                if(detlleOtrosPagosNoSujetoIva.length>0)
+                    detlleOtrosPagosNoSujetoIva= detlleOtrosPagosNoSujetoIva + ',';
+                detlleOtrosPagosNoSujetoIva = detlleOtrosPagosNoSujetoIva + '"' + item.description + '":' + item.subTotal;
+            }
+        });
+        ebBillDto.details = ebBillDetail;
+        ebBillDto.ajusteNoSujetoIva = ajusteNoSujetoIva;
+        if(detalleAjusteNoSujetoIva.length>0)
+            ebBillDto.detalleAjusteNoSujetoIva = '{' + detalleAjusteNoSujetoIva + '}';
+        ebBillDto.ajusteSujetoIva = ajusteSujetoIva;
+        if(detalleAjusteSujetoIva.length>0)
+            ebBillDto.detalleAjusteSujetoIva = '{' + detalleAjusteSujetoIva + '}';
+        ebBillDto.otrosPagosNoSujetoIva = otrosPagosNoSujetoIva;
+        if(detlleOtrosPagosNoSujetoIva.length>0)
+            ebBillDto.detlleOtrosPagosNoSujetoIva = '{' + detlleOtrosPagosNoSujetoIva + '}';
+
+        return ebBillDto;
+    }
 
 }

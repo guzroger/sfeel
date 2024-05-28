@@ -49,6 +49,18 @@ export class EbHomologationCatalogueService {
         return null;
     }
 
+
+    async delete(codecodeHomologated:string, systemCode:string, nit:number, type:string){
+        return await this.prismaService.ebHomologationCatalogue.deleteMany({
+            where: {
+                systemCode: systemCode,
+                nit: nit,
+                type: type,
+                codeHomologated: codecodeHomologated
+            }
+        });
+    }
+
     async findById(code:string, systemCode:string, nit:number, type:string){
         const tmp = await this.prismaService.ebHomologationCatalogue.findUnique({
             where: {

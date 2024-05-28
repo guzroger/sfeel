@@ -5,6 +5,9 @@ import { ebBill, ebBillDetail } from '@prisma/client';
 import { EbBillDetailService } from './ebBillDetail.service';
 import { EbBillDetailDto } from './dto/ebBillDetail.dto';
 import { EbSystemDto } from './dto/ebSystem.dto';
+import { BillPageOptionsDto } from 'src/bill/dto/billPageOptions.dto';
+import { PageMetaDto } from 'src/common/dto/pageMeta.dto';
+import { PageDto } from 'src/common/dto/page.dto';
 
 @Injectable()
 export class EbBillService {
@@ -82,7 +85,15 @@ export class EbBillService {
         amountDiscountCreditDebit: ebBillDto.amountDiscountCreditDebit,
         amountEffectiveCreditDebit: ebBillDto.amountEffectiveCreditDebit,
         billIdRef: ebBillDto.billIdRef,
-        user: ebBillDto.user
+        user: ebBillDto.user,
+        meterNumber:ebBillDto.meterNumber,
+        beneficiarioLey1886:ebBillDto.beneficiarioLey1886,
+        montoDescuentoLey1886:ebBillDto.montoDescuentoLey1886,
+        montoDescuentoTarifaDignidad:ebBillDto.montoDescuentoTarifaDignidad,
+        tasaAseo:ebBillDto.tasaAseo,
+        tasaAlumbrado:ebBillDto.tasaAlumbrado,
+        otrasTasas:ebBillDto.otrasTasas,
+        studentName: ebBillDto.studentName
       },
     });
 
@@ -167,7 +178,15 @@ export class EbBillService {
         amountDiscountCreditDebit: ebBillDto.amountDiscountCreditDebit,
         amountEffectiveCreditDebit: ebBillDto.amountEffectiveCreditDebit,
         billIdRef: ebBillDto.billIdRef,
-        user: ebBillDto.user
+        user: ebBillDto.user,
+        meterNumber:ebBillDto.meterNumber,
+        beneficiarioLey1886:ebBillDto.beneficiarioLey1886,
+        montoDescuentoLey1886:ebBillDto.montoDescuentoLey1886,
+        montoDescuentoTarifaDignidad:ebBillDto.montoDescuentoTarifaDignidad,
+        tasaAseo:ebBillDto.tasaAseo,
+        tasaAlumbrado:ebBillDto.tasaAlumbrado,
+        otrasTasas:ebBillDto.otrasTasas,
+        studentName: ebBillDto.studentName
       },
     });
 
@@ -332,6 +351,49 @@ async getBillWithoutPackage(ebSystemDto:EbSystemDto, sucursalCode:number, salePo
   return null;
 }
 
+async findAll(pageOptionsDto:BillPageOptionsDto, ebSystemDto:EbSystemDto) {
+  
+  let where = {};
+
+  if(pageOptionsDto.billId)
+    where = { billId: BigInt(pageOptionsDto.billId), }
+
+  else if(pageOptionsDto.cuf)
+    where = { cuf: pageOptionsDto.cuf }
+  else {
+    where = {systemCode: ebSystemDto.systemCode,
+      nitEmitter: ebSystemDto.nit,
+      sucursalCode: +pageOptionsDto.sucursalCode,
+      salePointCode: +pageOptionsDto.salePointCode,};
+
+    if(pageOptionsDto.dateBegin && pageOptionsDto.dateEnd)
+    {
+    const dateBegin = new Date(pageOptionsDto.dateBegin + "T00:00:00.000Z");
+    const dateEnd = new Date(pageOptionsDto.dateEnd + "T00:00:00.000Z");
+    where['AND'] = [ { dateEmitte: { gte: dateBegin } }, {  dateEmitte: { lte: dateEnd } } ];
+    }
+
+    if(pageOptionsDto.number)
+    where['billNumber'] = pageOptionsDto.number;
+  }
+  
+  const itemCount = await this.prismaService.ebBill.count({
+    where: where
+  });
+  const bills = await this.prismaService.ebBill.findMany({
+    skip: pageOptionsDto.skip,
+    take: +pageOptionsDto.take,
+    orderBy: { [pageOptionsDto.orderBy]: pageOptionsDto.order },
+    where: where,
+    include: {details: true }
+  });
+
+  const ebBillsDto = bills.map( item => { return this.mapEbBillDto( item, item.details)  });
+
+  const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+  return new PageDto(ebBillsDto, pageMetaDto);
+}
+
   mapEbBillDto(ebBill: ebBill, details: ebBillDetail[]): EbBillDto {
     const ebBillDto = new EbBillDto();
 
@@ -395,6 +457,15 @@ async getBillWithoutPackage(ebSystemDto:EbSystemDto, sucursalCode:number, salePo
     ebBillDto.amountDiscountCreditDebit = ebBill.amountDiscountCreditDebit ;
     ebBillDto.amountEffectiveCreditDebit = ebBill.amountEffectiveCreditDebit ;
     ebBillDto.user = ebBill.user;
+
+    ebBillDto.meterNumber = ebBill.meterNumber;
+    ebBillDto.beneficiarioLey1886 = ebBill.beneficiarioLey1886;
+    ebBillDto.montoDescuentoLey1886 =ebBill.montoDescuentoLey1886;
+    ebBillDto.montoDescuentoTarifaDignidad =ebBill.montoDescuentoTarifaDignidad;
+    ebBillDto.tasaAseo = ebBill.tasaAseo;
+    ebBillDto.tasaAlumbrado = ebBill.tasaAlumbrado;
+    ebBillDto.otrasTasas = ebBill.otrasTasas;
+    ebBillDto.studentName = ebBill.studentName;
 
     if (details != null && details.length > 0) {
       ebBillDto.details = details.map((item) => {

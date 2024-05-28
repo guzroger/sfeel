@@ -45,6 +45,16 @@ export class EbHomologationProductServiceService {
         });
     }
 
+    async delete( systemCode:string, nit:number, codeHomologated:string){
+        return await this.prismaService.ebHomologationProductService.deleteMany({
+            where: {
+                systemCode: systemCode,
+                nit: nit,
+                codeHomologated:  codeHomologated
+            }
+        });
+    }
+
     async findById(productCode:string, systemCode:string, nit:number, activityCode:string){
         const tmp = await this.prismaService.ebHomologationProductService.findUnique({
             where: {
