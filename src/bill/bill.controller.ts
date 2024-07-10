@@ -1,20 +1,20 @@
 import { BadRequestException, Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { BillingService } from '../billing/billing.service';
-import { SendBillDto } from '../billing/dto/sendBill.dto';
+import { BillService } from './bill.service';
+import { SendBillDto } from './dto/sendBill.dto';
 import { EbSystemService } from 'src/model/ebSystem.service';
-import { Constants } from 'src/common/constants.enum';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SendBillResponseDto } from './dto/sendBillResponse.dto';
-import { MapperService } from './dto/mapper.service';
-import { Parameters } from 'src/common/parameters';
+import { MapperService } from '../common/mapper.service';
+import { Parameters } from 'src/common/tools/parameters';
 import { SendNoteDto } from './dto/sendNote.dto';
 import { BillPageOptionsDto } from './dto/billPageOptions.dto';
+import { Constants } from 'src/common/enum/constants.enum';
 
 @ApiTags('bill')
 @Controller('bill')
 export class BillController {
   constructor(
-    private billingService: BillingService,
+    private billService: BillService,
     private ebSystemService: EbSystemService,    
     private mapper:MapperService
     
@@ -39,15 +39,15 @@ export class BillController {
       Parameters.codigoSistema, param.nit,
     );
     if(query.cuf && query.number)
-      return this.billingService.getBillByCufAndNumber(ebSystemDto, query.cuf, Number(query.number) );
+      return this.billService.getBillByCufAndNumber(ebSystemDto, query.cuf, Number(query.number) );
 
     if(query.billId && param.nit)
-      return this.billingService.getBill(ebSystemDto, query.billId );
+      return this.billService.getBill(ebSystemDto, query.billId );
 
     if(!query.sucursalCode || !query.dateBegin || !query.dateEnd || !param.nit)
       throw new BadRequestException();  
 
-    return this.billingService.getBills(ebSystemDto, query.sucursalCode, query.salePointCode, query.dateBegin, query.dateEnd);
+    return this.billService.getBills(ebSystemDto, query.sucursalCode, query.salePointCode, query.dateBegin, query.dateEnd);
   } 
 
 
@@ -62,7 +62,7 @@ export class BillController {
       Parameters.codigoSistema, param.nit,
     );
 
-    return this.billingService.findAll(billPageOptionsDto, ebSystemDto);
+    return this.billService.findAll(billPageOptionsDto, ebSystemDto);
   } 
 
   
@@ -83,12 +83,11 @@ export class BillController {
       Parameters.codigoSistema, sendBillDto.business.nit,
     );
     const ebBillDto = await this.mapper.mapEbBillDto(sendBillDto, ebSystemDto);
-
     //ebBillDto.documentTaxCode = Constants.DocumentTaxCodeBill;
     if(!ebBillDto.emitteType)
       ebBillDto.emitteType = Constants.EmitterTypeOnline;
 
-    return this.billingService.sendBill(ebBillDto, ebSystemDto);
+    return this.billService.sendBill(ebBillDto, ebSystemDto);
   }
 
   @ApiOperation({
@@ -107,13 +106,13 @@ export class BillController {
       Parameters.codigoSistema, sendBillDto.nit,
     );
   
-    const ebBillDto = await this.billingService.getBill(ebSystemDto, sendBillDto.billId);
+    const ebBillDto = await this.billService.getBill(ebSystemDto, sendBillDto.billId);
     this.mapper.setLegend(ebBillDto, ebSystemDto);
     
     if(!ebBillDto.emitteType)
       ebBillDto.emitteType = Constants.EmitterTypeOnline;
 
-    return this.billingService.sendBill(ebBillDto, ebSystemDto);
+    return this.billService.sendBill(ebBillDto, ebSystemDto);
   }
   
   @ApiOperation({
@@ -131,13 +130,13 @@ export class BillController {
     const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit(
       Parameters.codigoSistema, sendNoteDto.business.nit,);
 
-    const ebBillDtoOriginal = await this.billingService.getBill(ebSystemDto, sendNoteDto.noteData.billIdRef);
+    const ebBillDtoOriginal = await this.billService.getBill(ebSystemDto, sendNoteDto.noteData.billIdRef);
     const ebBillDto = await this.mapper.mapSendNoteDtoToEbBillDto(sendNoteDto, ebBillDtoOriginal, ebSystemDto);
     
-    const sendBillResponseDto = await this.billingService.sendBill(ebBillDto, ebSystemDto);
+    const sendBillResponseDto = await this.billService.sendBill(ebBillDto, ebSystemDto);
 
     if(sendBillResponseDto.statusCode === "908"){
-      await this.billingService.changeStatusAdjustedBill(ebBillDtoOriginal);
+      await this.billService.changeStatusAdjustedBill(ebBillDtoOriginal);
     }
 
     return sendBillResponseDto;
@@ -153,7 +152,7 @@ export class BillController {
   @Put('voidBill/:nit/:id')
   async voidBill(@Param() param:any){
     const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit( Parameters.codigoSistema,param.nit,);
-    return this.billingService.voidBill(ebSystemDto, param.id);
+    return this.billService.voidBill(ebSystemDto, param.id);
   }
 
   @ApiOperation({
@@ -165,7 +164,7 @@ export class BillController {
   @Put('reverseVoidBill/:nit/:id')
   async reverseVoidBill(@Param() param:any){
     const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit( Parameters.codigoSistema,param.nit,);
-    return this.billingService.reverseVoidBill(ebSystemDto, param.id);
+    return this.billService.reverseVoidBill(ebSystemDto, param.id);
   }
 
 
@@ -178,20 +177,21 @@ export class BillController {
   @Get('xml/:nit/:id')
   async getBillXml(@Param() param:any){
     const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit( Parameters.codigoSistema,param.nit,);
-    return this.billingService.getXmlBill(ebSystemDto, param.id);
+    return this.billService.getXmlBill(ebSystemDto, param.id);
   }
 
 
   @ApiOperation({
-    summary: 'Get xml Bill',
-    description: 'Method for get the xml of bill',
+    summary: 'Get pdf Bill',
+    description: 'Method for get the pdf of bill',
   })
   @ApiParam({ name : "id"})
   @ApiParam({ name : "nit"})
+  @ApiQuery({name: "type"})
   @Get('pdf/:nit/:id')
-  async getBillPdf(@Param() param:any){
+  async getBillPdf(@Param() param:any, @Query() query){
     const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit( Parameters.codigoSistema,param.nit,);
-    return this.billingService.getPdfBill(ebSystemDto, param.id);
+    return this.billService.getPdfBill(ebSystemDto, param.id, query.type);
   }
 
   @ApiOperation({
@@ -201,7 +201,7 @@ export class BillController {
   @ApiParam({ name : "id"})
   @Get("status/:id")
   getBillStatus(@Param() param:any){
-    return this.billingService.billStatus(param.id);
+    return this.billService.billStatus(param.id);
   }
 
   @ApiOperation({
@@ -211,7 +211,7 @@ export class BillController {
   @ApiParam({ name : "id"})
   @Put("status/:id")
   updateBillStatus(@Param() param:any){
-    return this.billingService.updateBillStatus(param.id);
+    return this.billService.updateBillStatus(param.id);
   }
 
   
@@ -220,9 +220,26 @@ export class BillController {
   @ApiParam({ name : "nit"})
   async sendMail(@Param() param:any){
     const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit( Parameters.codigoSistema,param.nit,);
-    return this.billingService.sendMail(ebSystemDto, param.id);
+    return this.billService.sendMail(ebSystemDto, param.id);
 
   }
+
+  @ApiOperation({
+    summary: 'Check Nit',
+    description: 'Method for check NIT',
+  })
+  @ApiParam({ name : "nit"})
+  @ApiQuery({ name : "modality"})
+  @ApiQuery({ name : "nitToCheck"})
+  @Get("checkNit/:nit")
+  async checkNit(@Query() query:any, @Param() param:any){
+
+      const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit( Parameters.codigoSistema,param.nit,);
+      
+      return this.billService.verfificarNit(ebSystemDto,query.modality, query.nitToCheck)
+      
+  }
+  
 
 }
 

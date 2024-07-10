@@ -4,11 +4,14 @@ services:
   sfeel_db:
     image: postgres:13
     ports:
-      - 5432:5432
+      - 5433:5432
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: miclave
       POSTGRES_DB: sfeeldb
+    volumes:
+      - /opt/docker/db_sfeel:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - sfeeldb_lan
       

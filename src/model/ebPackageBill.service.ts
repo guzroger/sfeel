@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { EbPackageBillDto } from './dto/ebPackageBill.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Constants } from 'src/common/constants.enum';
 import { ebBill, ebBillDetail, ebPackageBill } from '@prisma/client';
 import { EbBillService } from './ebBill.service';
 import { async } from 'rxjs';
 import { EbBillDto } from './dto/ebBill.dto';
+import { Constants } from 'src/common/enum/constants.enum';
 
 @Injectable()
 export class EbPackageBillService {

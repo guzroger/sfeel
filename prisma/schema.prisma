@@ -466,7 +466,7 @@ model ebDosification {
   type               String @map("type_")
   systemCode         String @map("system_code")
   nit                BigInt
-  modalityCode       Int    @map("modality_code")
+  modalityCode       Int    @map("modality_code") @default(0)
 
   @@map("eb_dosification")
 }

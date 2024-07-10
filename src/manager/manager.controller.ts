@@ -1,16 +1,14 @@
 import { Body, Controller, Get, Inject, Param, Post, Req } from "@nestjs/common";
 import { ApiBody, ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
-import { BillingCodeService } from "src/billing/billingCode.service";
-import { SynchronizationService } from "src/billing/synchronization.service";
-import { ParameterService } from "src/common/parameter.service";
 import { EbSystemService } from "src/model/ebSystem.service";
 import { GeneralSystemParameterDto } from "./dto/generalSystemParameter.dto";
 import { EbSalePointService } from "src/model/ebSalePoint.service";
 import { EbSucursalService } from "src/model/ebSucursal.service";
 import { ManagerService } from "./manager.service";
 import { CufdParameterDto } from "./dto/cufdParameter.dto";
-import { Parameters } from "src/common/parameters";
+import { Parameters } from "src/common/tools/parameters";
 import { CreatePointSaleDto } from "./dto/createPointSale.dto";
+import { BillingCodeService } from "src/common/billingCode.service";
 
 @ApiTags('Manager')
 @Controller('mng')
@@ -18,7 +16,6 @@ export class ManagerController {
 
    constructor(
         private billingCodeService: BillingCodeService,
-        private synchronizationService: SynchronizationService,
         private ebSystemService:EbSystemService,
         private ebSalePointService:EbSalePointService,
         private ebSucursalService:EbSucursalService,
@@ -80,21 +77,7 @@ export class ManagerController {
           )};
   }
   
-  @ApiOperation({
-    summary: 'Send bill to SIN',
-    description: 'Method for send bill to SIN',
-  })
-  @ApiParam({ name : "nit"})
-  @Post('/sync/:nit')
-  async sync(@Param() params: any, @Body() body:any ): Promise<any> {
-    
-    return this.synchronizationService.sincronizarCatalogo(
-      params.nit,
-      body.sucursal?body.sucursal:0,
-      body.salePoint?body.salePoint:0,
-      body.modality?body.modality:1
-    );
-  }
+  
 
   @ApiOperation({
     summary: 'Ping service',

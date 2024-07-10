@@ -88,8 +88,9 @@ export class XmlDocumentBillParser {
         return FacturaServiciosBasicos.facturaComputarizadaServiciosBasicos(ebBillDto, ebSucursalDto);
     }
 
-    private static fixedEbBillDto(ebBillDto: EbBillDto){
+    static fixedEbBillDto(ebBillDto: EbBillDto){
         const ebBillDetail = Array();
+        const ebBillDetailNotInclude = Array();
         let ajusteNoSujetoIva = 0;
         let detalleAjusteNoSujetoIva = "";
         let ajusteSujetoIva = 0;
@@ -105,21 +106,25 @@ export class XmlDocumentBillParser {
                 if(detalleAjusteNoSujetoIva.length>0)
                     detalleAjusteNoSujetoIva= detalleAjusteNoSujetoIva + ',';
                 detalleAjusteNoSujetoIva = detalleAjusteNoSujetoIva + '"' + item.description + '":' + item.subTotal;
+                ebBillDetailNotInclude.push(item);
             }
             else if(item.typeDetail === 'AJUSTE_SUJETO_IVA') {
                 ajusteSujetoIva = ajusteSujetoIva + item.subTotal;
                 if(detalleAjusteSujetoIva.length>0)
                     detalleAjusteSujetoIva= detalleAjusteSujetoIva + ',';
                 detalleAjusteSujetoIva = detalleAjusteSujetoIva + '"' + item.description + '":' + item.subTotal;
+                ebBillDetailNotInclude.push(item);
             }
             else if(item.typeDetail === 'OTROS_PAGOS_NO_SUJETO_IVA') {
                 otrosPagosNoSujetoIva = otrosPagosNoSujetoIva + item.subTotal;
                 if(detlleOtrosPagosNoSujetoIva.length>0)
                     detlleOtrosPagosNoSujetoIva= detlleOtrosPagosNoSujetoIva + ',';
                 detlleOtrosPagosNoSujetoIva = detlleOtrosPagosNoSujetoIva + '"' + item.description + '":' + item.subTotal;
+                ebBillDetailNotInclude.push(item);
             }
         });
         ebBillDto.details = ebBillDetail;
+        ebBillDto.detailsNotInclude = ebBillDetailNotInclude;
         ebBillDto.ajusteNoSujetoIva = ajusteNoSujetoIva;
         if(detalleAjusteNoSujetoIva.length>0)
             ebBillDto.detalleAjusteNoSujetoIva = '{' + detalleAjusteNoSujetoIva + '}';

@@ -26,10 +26,10 @@ export class EbDosificationService {
     }
 
     async update(ebDosificationDto:EbDosificationDto) :Promise<EbDosificationDto>{
-        const tmp = this.findById(ebDosificationDto.code);
+        const tmp = await this.findById(ebDosificationDto.code);
             if (tmp == null) return null;
-        
-        const ebBill = await this.prismaService.ebDosification.update({
+       
+        const ebDosification = await this.prismaService.ebDosification.update({
             where: {
                 code: ebDosificationDto.code,
             },
@@ -43,6 +43,7 @@ export class EbDosificationService {
                 nit: ebDosificationDto.nit,
             },
             });
+
     }
 
     async findById(code:string): Promise<EbDosificationDto> {
@@ -64,8 +65,8 @@ export class EbDosificationService {
         ebDosificationDto.code = ebDosification.code;
         ebDosificationDto.sectorDocumentCode = ebDosification.sectorDocumentCode;
         ebDosificationDto.begin = ebDosification.begin;
-        ebDosificationDto.last = ebDosification.begin;
-        ebDosificationDto.current = ebDosification.begin;
+        ebDosificationDto.last = ebDosification.last;
+        ebDosificationDto.current = ebDosification.current;
         ebDosificationDto.type = ebDosification.type;
         ebDosificationDto.nit = Number(ebDosification.nit);
         ebDosificationDto.systemCode = ebDosification.systemCode;

@@ -7,6 +7,15 @@ import { ModelModule } from "./model/model.module";
 import { BillModule } from "./bill/bill.module";
 import { ManagerModule } from "./manager/manager.module";
 import { AuthModule } from "./auth/auth.module";
+import { ContingencyModule } from "./contingency/contingency.module";
+import { PackageBillingModule } from "./package-billing/package-billing.module";
+import { SynchronizationModule } from "./synchronization/synchronization.module";
+import { CatalogueModule } from "./catalogue/catalogue.module";
+import { SucursalModule } from "./sucursal/sucursal.module";
+import { SystemModule } from "./system/system.module";
+import { TokenModule } from "./token/token.module";
+import { CertificateModule } from "./certificate/certificate.module";
+
 
 @Module({
   imports: [
@@ -17,7 +26,17 @@ import { AuthModule } from "./auth/auth.module";
     ModelModule,
     BillModule,
     ManagerModule,
-    AuthModule
+    AuthModule,
+    
+    ContingencyModule,
+    PackageBillingModule,
+    SynchronizationModule,
+    CatalogueModule,
+
+    SucursalModule,
+    SystemModule,
+    TokenModule,
+    CertificateModule
   ],
   providers: []
 })

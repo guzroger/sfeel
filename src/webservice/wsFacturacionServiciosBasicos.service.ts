@@ -4,13 +4,13 @@ import { SoapRequestService } from 'src/common/soapRequest.service';
 import { EbSystemDto } from 'src/model/dto/ebSystem.dto';
 import { EbBillDto } from '../model/dto/ebBill.dto';
 import { RecepcionFacturaResponse } from './dto/recepcionFactura.response';
-import { LoggerInterceptor } from 'src/common/logger.interceptor';
+import { LoggerInterceptor } from 'src/common/interceptor/logger.interceptor';
 import { EbPackageBillDto } from 'src/model/dto/ebPackageBill.dto';
 import { RecepcionPaqueteFacturaResponse } from './dto/recepcionPaqueteFactura.response';
 import { ValidacionRecepcionPaqueteFacturaResponse } from './dto/validacionRecepcionPaqueteFactura.response';
 import { AnulacionFacturaResponse } from './dto/anulacionFactura.response';
 import { VerificacionEstadoFacturaResponse } from './dto/verificacionEstadoFactura.response';
-import { Parameters } from 'src/common/parameters';
+import { Parameters } from 'src/common/tools/parameters';
 import { WsFacturacionService } from './WsFacturacion.service';
 import { ReversionAnulacionFacturaResponse } from './dto/reversionAnulacionFactura.response';
 
@@ -67,7 +67,6 @@ export class WsFacturacionServiciosBasicos implements WsFacturacionService {
     recepcionPaqueteFactura(ebPackageBillDto:EbPackageBillDto, ebSystemDto: EbSystemDto, cuis:string, archive:string, hash:string, urlService:string):Promise<RecepcionPaqueteFacturaResponse>{
       let dateEmiite = this.parameterService.getNow().toISOString();
         dateEmiite= dateEmiite.replace('Z', '');
-
         const xml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:siat="https://siat.impuestos.gob.bo/">
                       <soapenv:Header/>
                       <soapenv:Body>

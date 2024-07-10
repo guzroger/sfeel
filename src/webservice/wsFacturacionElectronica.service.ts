@@ -4,7 +4,7 @@ import { SoapRequestService } from "src/common/soapRequest.service";
 import { EbBillDto } from "src/model/dto/ebBill.dto";
 import { EbSystemDto } from "src/model/dto/ebSystem.dto";
 import { RecepcionFacturaResponse } from "./dto/recepcionFactura.response";
-import { Parameters } from "src/common/parameters";
+import { Parameters } from "src/common/tools/parameters";
 import { EbPackageBillDto } from "src/model/dto/ebPackageBill.dto";
 import { RecepcionPaqueteFacturaResponse } from "./dto/recepcionPaqueteFactura.response";
 import { ValidacionRecepcionPaqueteFacturaResponse } from "./dto/validacionRecepcionPaqueteFactura.response";
@@ -61,7 +61,7 @@ export class WsFacturacionElectronicaService implements WsFacturacionService{
     recepcionPaqueteFactura(ebPackageBillDto:EbPackageBillDto, ebSystemDto: EbSystemDto, cuis:string, archive:string, hash:string, urlService:string):Promise<RecepcionPaqueteFacturaResponse>{
         let dateEmiite = this.parameterService.getNow().toISOString();
           dateEmiite= dateEmiite.replace('Z', '');
-  
+
           const xml = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:siat="https://siat.impuestos.gob.bo/">
                         <soapenv:Header/>
                         <soapenv:Body>
@@ -88,6 +88,7 @@ export class WsFacturacionElectronicaService implements WsFacturacionService{
                           </siat:recepcionPaqueteFactura>
                         </soapenv:Body>
        </soapenv:Envelope>`;
+
           return this.soapRequestService.callService<RecepcionPaqueteFacturaResponse>(
             urlService,
               xml,

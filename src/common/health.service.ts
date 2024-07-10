@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { HealthCheckService, HttpHealthIndicator } from "@nestjs/terminus";
 import { ParameterService } from "./parameter.service";
-import { Parameters } from "./parameters";
+import { Parameters } from "./tools/parameters";
 
 @Injectable()
 export class HealthService {

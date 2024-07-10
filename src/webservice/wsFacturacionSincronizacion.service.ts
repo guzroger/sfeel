@@ -9,7 +9,7 @@ import { SincronizarListaActividadesDocumentoSectorResponse } from './dto/sincro
 import { SincronizarListaLeyendasFacturaResponse } from './dto/sincronizarListaLeyendasFactura.response';
 import { SincronizarListaProductosServiciosResponse } from './dto/sincronizarListaProductosServicios.response';
 import { RespuestaListaParametricas } from './dto/respuestaListaParametricas.response';
-import { Parameters } from 'src/common/parameters';
+import { Parameters } from 'src/common/tools/parameters';
 
 @Injectable()
 export class WsFacturacionSincronizacionService {

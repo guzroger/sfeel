@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create_user.dto';
 import { LoginDto } from './dto/login.dto';
 import { hash, compare } from "bcrypt"
 import { EbSystemService } from "src/model/ebSystem.service";
-import { Parameters } from "src/common/parameters";
+import { Parameters } from "src/common/tools/parameters";
 import { SeUserService } from "src/model/seUser.service";
 import { JwtService } from '@nestjs/jwt';
 

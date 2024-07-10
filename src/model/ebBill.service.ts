@@ -17,6 +17,7 @@ export class EbBillService {
   ) {}
 
   async create(ebBillDto: EbBillDto): Promise<EbBillDto> {
+   
     if (ebBillDto.billId != null) {
       try{
         const tmp = await this.findById(ebBillDto.billId);
@@ -27,7 +28,7 @@ export class EbBillService {
 
     const tmp = await this.findByCuf(ebBillDto.cuf);
     if (tmp != null) throw new ConflictException("Duplicate CUF");
-
+    console.log(ebBillDto);
     const ebBill = await this.prismaService.ebBill.create({
       data: {
         systemCode: ebBillDto.systemCode,
@@ -98,9 +99,18 @@ export class EbBillService {
     });
 
     let details: EbBillDetailDto[] = null;
-    if (ebBillDto.details != null) {
-      let numberDetail = 0;
+    let numberDetail = 0;
+    if (ebBillDto.details != null) { 
       details = await Promise.all( ebBillDto.details.map( async (item) => {
+        numberDetail++;
+        item.order = numberDetail;
+        item.billId = Number(ebBill.billId);
+        return  await this.ebBillDetailService.create(item);
+      }));
+    }
+
+    if (ebBillDto.detailsNotInclude != null) {
+      details = await Promise.all( ebBillDto.detailsNotInclude.map( async (item) => {
         numberDetail++;
         item.order = numberDetail;
         item.billId = Number(ebBill.billId);
@@ -112,6 +122,7 @@ export class EbBillService {
   }
 
   async update(ebBillDto: EbBillDto): Promise<EbBillDto> {
+    
     const tmp = this.findById(ebBillDto.billId);
     if (tmp == null) return null;
 
@@ -286,7 +297,8 @@ export class EbBillService {
           salePointCode: salePointCode,
           AND: [ { dateEmitte: { gte: dateBegin } }, {  dateEmitte: { lte: dateEnd } } ] ,
          
-        }
+        },
+        orderBy: [{ dateEmitte: 'desc' } ]
       });
     }
     else {

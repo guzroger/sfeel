@@ -1,5 +1,5 @@
 import { ParameterService } from "src/common/parameter.service";
-import { Parameters } from "src/common/parameters";
+import { Parameters } from "src/common/tools/parameters";
 import { SoapRequestService } from "src/common/soapRequest.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import { EbSalePointDto } from '../model/dto/ebSalePoint.dto';

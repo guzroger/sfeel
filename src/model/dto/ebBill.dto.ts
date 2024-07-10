@@ -23,6 +23,7 @@ export class EbBillDto {
   amountDiscount: number;
   amountGiftCard: number;
   coinCode: string;
+  coin: string;
   exchangeRate: number;
   legend: string;
   sectorDocumentCode: string;
@@ -48,6 +49,7 @@ export class EbBillDto {
   createdAt: Date;
   user:string;
   details: EbBillDetailDto[];
+  detailsNotInclude: EbBillDetailDto[];
 
   addressBuyer:string;
   placeDestination:string;
@@ -78,4 +80,5 @@ export class EbBillDto {
   tasaAlumbrado:number;
   otrasTasas:number;
   studentName:string;
+
 }

@@ -3,7 +3,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { EbEventDto } from "./dto/ebEvent.dto";
 import { ebEvent } from "@prisma/client";
 import { ParameterService } from '../common/parameter.service';
-import { Constants } from "src/common/constants.enum";
+import { Constants } from "src/common/enum/constants.enum";
 
 @Injectable()
 export class EbEventService {

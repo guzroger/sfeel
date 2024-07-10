@@ -31,7 +31,7 @@ export class FacturaServiciosBasicos {
                   <numeroMedidor>${ebBillDto.meterNumber}</numeroMedidor>            
                   <fechaEmision>${dateEmiite}</fechaEmision>
                   <nombreRazonSocial>${ebBillDto.billName}</nombreRazonSocial>
-                  <domicilioCliente>Av. Tejada Sorzano 231</domicilioCliente>
+                  <domicilioCliente>${ebBillDto.address}</domicilioCliente>
                   <codigoTipoDocumentoIdentidad>${ebBillDto.documentType}</codigoTipoDocumentoIdentidad>
                   <numeroDocumento>${ebBillDto.billDocument.trim()}</numeroDocumento>
                   ${
@@ -146,7 +146,7 @@ export class FacturaServiciosBasicos {
               <numeroMedidor>${ebBillDto.meterNumber}</numeroMedidor>
               <fechaEmision>${dateEmiite}</fechaEmision>
               <nombreRazonSocial>${ebBillDto.billName}</nombreRazonSocial>
-              <domicilioCliente>Av. Tejada Sorzano 231</domicilioCliente>
+              <domicilioCliente>${ebBillDto.address}</domicilioCliente>
               <codigoTipoDocumentoIdentidad>${ebBillDto.documentType}</codigoTipoDocumentoIdentidad>
               <numeroDocumento>${ebBillDto.billDocument.trim()}</numeroDocumento>
               ${

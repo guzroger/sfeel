@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GeConstantService } from '../model/geConstant.service';
-import { Parameters } from './parameters';
+import { Parameters } from './tools/parameters';
 
 @Injectable()
 export class ParameterService {

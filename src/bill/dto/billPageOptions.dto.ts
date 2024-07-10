@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { PageOptionsDto } from "src/common/dto/pageOptions.dt";
-import { BillFieldEnum } from "../enum/product-filed-enum";
+import { BillFieldEnum } from "../enum/bill-filed-enum";
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional } from "class-validator";
 
 export class BillPageOptionsDto extends PageOptionsDto {

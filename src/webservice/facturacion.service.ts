@@ -12,7 +12,7 @@ export class FacturacionService {
                 private wsFacturacionDocumentoAjusteService:WsFacturacionDocumentoAjusteService,
                 private wsFacturacionServiciosBasicos:WsFacturacionServiciosBasicos){}
 
-    getService(serviceName:string):WsFacturacionService {
+    getService(serviceName:string):WsFacturacionService {        
         return this[serviceName];
     }
 }

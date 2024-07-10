@@ -6,7 +6,7 @@ import { EbSystemDto } from "src/model/dto/ebSystem.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { ConsultaEventoSignificativoResponse } from "./dto/consultaEventoSignificativo.response";
 import { RegistroEventoSignificativoResponse } from "./dto/registroEventoSignificativo.response";
-import { Parameters } from "src/common/parameters";
+import { Parameters } from "src/common/tools/parameters";
 
 @Injectable()
 export class WsEventosSignificativos {

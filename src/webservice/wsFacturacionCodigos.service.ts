@@ -7,7 +7,7 @@ import { CufdResponse } from './dto/cufd.response';
 import { EbSystemDto } from '../model/dto/ebSystem.dto';
 import { VerificarNitResponse } from './dto/verificarNit.response';
 import { Injectable } from '@nestjs/common';
-import { Parameters } from 'src/common/parameters';
+import { Parameters } from 'src/common/tools/parameters';
 
 @Injectable()
 export class WsFacturacionCodigosService {

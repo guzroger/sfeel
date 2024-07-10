@@ -1,18 +1,17 @@
 import { Module } from '@nestjs/common';
 import { BillController } from './bill.controller';
-import { CataloqueController } from './catalogue.controller';
-import { CataloguqeService } from './catalogue.service';
-import { MapperService } from './dto/mapper.service';
-import { ContingencyController } from './contingency.controller';
-import { ContingencyService } from './contingency.service';
-import { PackageController } from './package.controller';
-import { BillingModule } from 'src/billing/billing.module';
+
+import { MapperService } from '../common/mapper.service';
+import { ContingencyService } from '../contingency/contingency.service';
 import { ModelModule } from 'src/model/model.module';
+import { BillService } from './bill.service';
+import { CatalogueModule } from 'src/catalogue/catalogue.module';
+import { CommonModule } from 'src/common/common.module';
+import { ContingencyModule } from 'src/contingency/contingency.module';
 
 @Module({
-  imports: [BillingModule, ModelModule],
-  controllers: [BillController, CataloqueController, ContingencyController, PackageController],
-  providers: [CataloguqeService, MapperService, ContingencyService, MapperService],
-  exports: [MapperService, ContingencyService],
+  imports: [ModelModule,  CommonModule, ContingencyModule],
+  controllers: [BillController],
+  providers: [BillService]
 })
 export class BillModule {}

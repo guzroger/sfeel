@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MensajesListDto } from './mensajesList.dto';
+import { MensajesListDto } from 'src/common/dto/mensajesList.dto';
 
 export class SendBillResponseDto {
   @ApiProperty()

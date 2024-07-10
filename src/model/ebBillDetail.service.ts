@@ -18,7 +18,7 @@ export class EbBillDetailService {
       ebBillDetailDto.order,
     );
     if (tmp != null) return tmp;
-
+    
     const ebBillDetail = await this.prismaService.ebBillDetail.create({
       data: {
         billId: Number(ebBillDetailDto.billId),
@@ -120,6 +120,7 @@ export class EbBillDetailService {
     ebBillDetailDto.description = ebBillDetail.description;
     ebBillDetailDto.quantity = ebBillDetail.quantity;
     ebBillDetailDto.measureCode = ebBillDetail.measureCode;
+
     ebBillDetailDto.measure = ebBillDetail.measure;
     ebBillDetailDto.unitPrice = ebBillDetail.unitPrice;
     ebBillDetailDto.amountDiscount = ebBillDetail.amountDiscount;

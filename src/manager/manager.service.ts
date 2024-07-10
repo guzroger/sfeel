@@ -1,6 +1,4 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
-import { PackageBillingService } from "src/billing/packageBilling.service";
-import { Constants } from "src/common/constants.enum";
 import { HealthService } from "src/common/health.service";
 import { EbSalePointDto } from "src/model/dto/ebSalePoint.dto";
 import { EbSystemDto } from "src/model/dto/ebSystem.dto";
@@ -9,12 +7,14 @@ import { EbSalePointService } from "src/model/ebSalePoint.service";
 import { EbSucursalService } from "src/model/ebSucursal.service";
 
 import { ParameterService } from '../common/parameter.service';
-import { ContingencyService } from '../bill/contingency.service';
+import { ContingencyService } from '../contingency/contingency.service';
 import { EbSucursalDto } from "src/model/dto/ebSucursal.dto";
 import { CreatePointSaleDto } from './dto/createPointSale.dto';
 import { WsFacturacionOperacionesService } from '../webservice/wsFacturacionOperaciones.service';
-import { BillingCodeService } from "src/billing/billingCode.service";
-import { Parameters } from '../common/parameters';
+import { Parameters } from '../common/tools/parameters';
+import { PackageBillingService } from "src/package-billing/packageBilling.service";
+import { BillingCodeService } from "src/common/billingCode.service";
+import { Constants } from "src/common/enum/constants.enum";
 
 @Injectable()
 export class ManagerService {
