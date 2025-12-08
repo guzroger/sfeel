@@ -40,6 +40,8 @@ export class BillDetail {
   @ApiProperty()
   measureCode: string;
   @ApiProperty()
+  measure: string;
+  @ApiProperty()
   unitPrice: number;
   @ApiProperty()
   amountDiscount: number;
@@ -75,6 +77,12 @@ export class Bill {
 export class BillData {
   @ApiProperty()
   billedPeriod: string;
+  @ApiProperty()
+  consumptionPeriod: string;
+  @ApiProperty()
+  year:string;
+  @ApiProperty()
+  month:string;
   @ApiProperty()
   emitteType: number;
   @ApiProperty()

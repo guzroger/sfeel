@@ -101,6 +101,7 @@ export class EbHomologationCatalogueService {
         ebHomologationCatalogueDto.type = ebHomologationCatalogue.type;
         ebHomologationCatalogueDto.createdAt = ebHomologationCatalogue.createdAt;
         ebHomologationCatalogueDto.description = ebHomologationCatalogue.description;
+        ebHomologationCatalogueDto.validateType = ebHomologationCatalogue.validateType;
 
         return ebHomologationCatalogueDto;
     }

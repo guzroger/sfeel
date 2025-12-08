@@ -88,7 +88,6 @@ export class WsFacturacionElectronicaService implements WsFacturacionService{
                           </siat:recepcionPaqueteFactura>
                         </soapenv:Body>
        </soapenv:Envelope>`;
-
           return this.soapRequestService.callService<RecepcionPaqueteFacturaResponse>(
             urlService,
               xml,

@@ -28,13 +28,12 @@ export class ManagerController {
     description: 'Method for send bill to SIN',
   })
   @ApiBody({ type: GeneralSystemParameterDto, description: 'Body' })
-  async getCuis(@Body() generalSystemParameterDto:GeneralSystemParameterDto): Promise<any> {
-    //console.log(req)
+  async getCuis(@Body() generalSystemParameterDto:GeneralSystemParameterDto): Promise<any> {    
     const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit(
       Parameters.codigoSistema,
       generalSystemParameterDto.nit,
     );
-   
+    
     return  {"statusCode": 200, "descriptionCode": "OK", 
     "cuis": await   this.billingCodeService.getCuis(ebSystemDto, generalSystemParameterDto.sucursalCode, generalSystemParameterDto.salePoint, ebSystemDto.modalityCode, new Date())};
   }

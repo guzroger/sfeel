@@ -1,3 +1,5 @@
+import { DataType } from "@prisma/client";
+
 export class EbHomologationCatalogueDto {
   code:string;
   type:string;
@@ -6,4 +8,5 @@ export class EbHomologationCatalogueDto {
   codeHomologated:string;
   description:string;
   createdAt:Date;
+  validateType:DataType
 }

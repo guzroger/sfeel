@@ -63,7 +63,9 @@ export class DocumentBillService {
             documentHml = templatePdf.letter(ebBillDto, ebSystemDto, ebSucursalDto, qr);
 
         const browser = await puppeteer.launch({
-            args: ['--no-sandbox'],
+            args: ['--no-sandbox',
+                      '--disable-setuid-sandbox',
+                      '--disable-gpu' ],
             headless: true,
             });
         const page = await browser.newPage();

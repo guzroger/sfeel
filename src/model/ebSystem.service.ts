@@ -32,10 +32,11 @@ export class EbSystemService {
     nit: number,
   ): Promise<EbSystemDto> {
     const currentDate = this.parameterService.getNow();
-
+    
     const ebSystem = await this.prismaService.ebSystem.findUnique({
       where: {
         systemCode_nit: { systemCode: systemCode, nit: Number(nit) },
+        status: 'ACTIVE'
       },
       include: {
         tokens: {
@@ -48,6 +49,7 @@ export class EbSystemService {
     });
 
     if (ebSystem != null) {
+      
       const ebSystemDto = this.mapEbSystem(ebSystem);
       
       ebSystem.tokens.forEach((token) => {
@@ -59,6 +61,10 @@ export class EbSystemService {
 
         ebSystemDto.token = ebTokenDto;
       });
+
+      if(!ebSystemDto.token)
+        throw new NotFoundException('Token is not found or it has expired');
+
       return ebSystemDto;
     }
     else{

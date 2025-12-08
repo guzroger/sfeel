@@ -11,16 +11,23 @@ export class EbPackageFileService {
         const tmp = await this.findById(ebPackageFileDto.packageId);
         
         if(tmp==null){
-            const ebPackageFile = await this.prismaService.ebPackageFile.create({ 
-                data: {
-                    packageId: ebPackageFileDto.packageId,
-                    file: ebPackageFileDto.file,
-                    createdAt: ebPackageFileDto.createdAt
-                }
-            });
-            if(!ebPackageFile) return null;
+            try {
+                const ebPackageFile = await this.prismaService.ebPackageFile.create({ 
+                    data: {
+                        packageId: ebPackageFileDto.packageId,
+                        file: ebPackageFileDto.file,
+                        createdAt: ebPackageFileDto.createdAt
+                    }
+                });
+                if(!ebPackageFile) return null;
 
-            return this.mapEbPackageFileDto(ebPackageFile);
+                return this.mapEbPackageFileDto(ebPackageFile);
+            }
+            catch (error){
+                console.log(error);
+            }
+            return null;
+            
         }
         else{
             const ebPackageFile = await this.prismaService.ebPackageFile.update({ 

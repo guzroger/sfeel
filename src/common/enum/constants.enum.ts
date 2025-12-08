@@ -22,8 +22,9 @@ export enum Constants {
   SincronizarParametricaTiposFactura = 'sincronizarParametricaTiposFactura',
   TiposFactura = 'TiposFactura',
   SincronizarParametricaUnidadMedida = 'sincronizarParametricaUnidadMedida',
-  SincronizarParametricaTipoEmision = 'sincronizarParametricaTipoEmision',
   UnidadMedida = 'UnidadMedida',
+  SincronizarParametricaTipoEmision = 'sincronizarParametricaTipoEmision',
+  TipoEmision = 'TipoEmision',
   ActivitiesDocumentSector = 'ActividadesDocumentoSector',
 
   BillStatusNew = 0,

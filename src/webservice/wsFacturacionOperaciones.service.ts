@@ -29,7 +29,7 @@ export class WsFacturacionOperacionesService {
         })
         .then((data) => {
         if (data != null) {
-            console.log(data.value);
+            
             this.URL_WS_FS = data.value;
         }
         });
@@ -56,7 +56,7 @@ export class WsFacturacionOperacionesService {
                         </soapenv:Body>
                     </soapenv:Envelope>`;
 
-                    console.log(xml);
+                    
         return this.soapRequestService.callService(
             this.URL_WS_FS,
             xml,
@@ -81,7 +81,7 @@ export class WsFacturacionOperacionesService {
                         </soapenv:Body>
                     </soapenv:Envelope>`;
 
-                    console.log(xml);
+                    
         return this.soapRequestService.callService(
             this.URL_WS_FS,
             xml,

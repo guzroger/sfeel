@@ -10,15 +10,22 @@ import { SynInvoiceLegendService } from "src/model/synInvoiceLegend.service";
 import { Parameters } from "src/common/tools/parameters";
 import { SendNoteDto } from "../bill/dto/sendNote.dto";
 import { SynInvoiceLegendDto } from "src/model/dto/synInvoiceLegend.dto";
+import { SynCatalogueService } from "src/model/synCatalogue.service";
+import { Constants } from "./enum/constants.enum";
+import { EbHomologationCatalogueService } from "src/model/ebHomologationCatalogue.service";
+import { DataType } from "@prisma/client";
 
 
 @Injectable()
 export class MapperService {
     constructor(private synProductServiceService:SynProductServiceService, 
         private synInvoiceLegendService:SynInvoiceLegendService,
+        private synCatalogueService:SynCatalogueService,
+        private ebHomologationCatalogueService: EbHomologationCatalogueService,
         private parameterService:ParameterService) {}
 
     async mapSendNoteDtoToEbBillDto(sendNoteDto: SendNoteDto, ebBillDtoOriginal:EbBillDto, ebSystemDto:EbSystemDto):Promise<EbBillDto> {
+        
         const ebBillDto = new EbBillDto();
         
         ebBillDto.billNumber = sendNoteDto.noteData.noteNumber;
@@ -205,6 +212,16 @@ export class MapperService {
     }
 
     async mapEbBillDto(sendBillDto: SendBillDto, ebSystemDto:EbSystemDto):Promise<EbBillDto> {
+        
+        const ebHomologationCatalogue = await this.ebHomologationCatalogueService.findById(sendBillDto.customer.documentType, ebSystemDto.systemCode, ebSystemDto.nit, Constants.TipoDocumentoIdentidad);
+        if(ebHomologationCatalogue.validateType){
+            if(ebHomologationCatalogue.validateType===DataType.NUMBER){
+                //!/[a-zA-Z]/.test('12.33?');
+                if(! /^\d+$/.test(sendBillDto.customer.document))
+                    throw new ConflictException("The document should only have numbers");
+            }
+        }
+        
         const ebBillDto = new EbBillDto();
         
         ebBillDto.billNumber = sendBillDto.bill.billNumber;
@@ -235,10 +252,20 @@ export class MapperService {
         //ebBillDto.exceptionDocument:number;
         ebBillDto.billExternalCode = sendBillDto.billData.externalCode;
         ebBillDto.billedPeriod = sendBillDto.billData.billedPeriod;
+        ebBillDto.consumptionPeriod = sendBillDto.billData.consumptionPeriod;
         ebBillDto.cafc = sendBillDto.billData.cafc;
         ebBillDto.email = sendBillDto.customer.email;
         ebBillDto.user = sendBillDto.billData.user;
         ebBillDto.studentName = sendBillDto.billData.studentName;
+        ebBillDto.year = sendBillDto.billData.year;
+        ebBillDto.month = sendBillDto.billData.month;
+
+        if(!ebBillDto.billedPeriod)
+            ebBillDto.billedPeriod = sendBillDto.billData.year + '-' + sendBillDto.billData.month;
+
+        if(ebBillDto.amount==0)
+            throw new ConflictException("El total de la factura no puede ser 0");
+        
 
         if(sendBillDto.billDataAditional){
             ebBillDto.addressBuyer = sendBillDto.billDataAditional.addressBuyer;
@@ -281,6 +308,15 @@ export class MapperService {
             }
             else{
                 const productService = await this.synProductServiceService.findByProductCode(item.productCodeSin,Parameters.codigoSistema , sendBillDto.business.nit );
+                const unidadMedida = await this.synCatalogueService.findById({
+                    code: item.measureCode,
+                    type: "" + Constants.UnidadMedida,
+                    systemCode: Parameters.codigoSistema,
+                    nit: Number(ebBillDto.nitEmitter),
+                    description: "",
+                    visible: ""
+                });
+                item.measure = unidadMedida.description;
                 return  this.mapEbBillDetailDto(item, productService.activityCode);
             }
 
@@ -337,6 +373,7 @@ export class MapperService {
         ebBillDetailDto.description = billDetail.description;
         ebBillDetailDto.quantity = billDetail.quantity;
         ebBillDetailDto.measureCode = billDetail.measureCode;
+        ebBillDetailDto.measure = billDetail.measure;
         ebBillDetailDto.unitPrice = billDetail.unitPrice;
         ebBillDetailDto.amountDiscount = billDetail.amountDiscount;
         ebBillDetailDto.subTotal = billDetail.subTotal;

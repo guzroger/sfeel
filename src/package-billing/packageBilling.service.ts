@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { EbPackageBillDto } from "src/model/dto/ebPackageBill.dto";
 import { EbSystemDto } from "src/model/dto/ebSystem.dto";
 import { EbBillService } from "src/model/ebBill.service";
@@ -27,6 +27,7 @@ import { SendPackageResponseDto } from "./dto/sendPackageResponse.dto";
 import { Constants } from "src/common/enum/constants.enum";
 import { MensajesListDto } from "src/common/dto/mensajesList.dto";
 import { BillXmlService } from "src/common/bill-xml.service";
+import { AppLogService } from "src/common/app-log.service";
 
 
 
@@ -47,9 +48,17 @@ export class PackageBillingService {
         private appCertificateService: AppCertificateService,
         private mapper:MapperService,
         private billXmlService:BillXmlService,
-        private prismaService:PrismaService){}
+        private prismaService:PrismaService,
+        private appLogService:AppLogService){}
 
     async createPackages(ebSystemDto:EbSystemDto, sucursalCode:number, salePointCode:number, emitteType:number, sectorDocumentCode:string){
+        const tranId = -1;
+        const userId = -1;
+        const serviceName = "package.createPackages";
+        const paramIn = `sucursalCode: ${sucursalCode}|salePointCode: ${salePointCode}|emitteType: emitteType|sectorDocumentCode: sectorDocumentCode`;
+        let messageError = "OK";
+        let idError = 0;
+
         let list = null;
         
         if(sectorDocumentCode)
@@ -57,8 +66,13 @@ export class PackageBillingService {
         else
             list = await this.ebBillService.getBillWithoutPackage(ebSystemDto, sucursalCode, salePointCode, emitteType, -1);
         
-        if(!list)
+        if(!list) {
+            idError = HttpStatus.NOT_FOUND;
+            messageError + "NOT FOUND BILSS";
+            await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
             throw new NotFoundException();
+        }
+            
 
         const listPackages = Array();
         let maxSize = 1;
@@ -95,7 +109,6 @@ export class PackageBillingService {
             keys.set(this.toStringMaps(key), key);
 
         });
-
         
         for (let [i, value] of mapPacakges) {
             const ebPackageBillDto = new EbPackageBillDto();
@@ -121,10 +134,19 @@ export class PackageBillingService {
             listPackages.push(packageBill);
         }
         
+        idError = HttpStatus.ACCEPTED;
+        await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
         return listPackages;
     }
 
     async sendPackage(ebSystemDto:EbSystemDto,packageId:number){
+        const tranId = -1;
+        const userId = -1;
+        const serviceName = "package.sendPackage";
+        const paramIn = `packageId: ${packageId}`;
+        let messageError = "OK";
+        let idError = 0;
+        
         const ebPackageBill = await this.ebPackageBillService.findById(packageId);
         const ebCuisDto = await this.billingCodeService.getCuis( ebSystemDto, ebPackageBill.sucursalCode, ebPackageBill.salePointCode, ebPackageBill.modalityCode, this.parameterService.getNow());        
         const ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebPackageBill.sucursalCode, ebPackageBill.salePointCode, ebPackageBill.modalityCode, this.parameterService.getNow(),ebCuisDto.cuis);
@@ -211,7 +233,7 @@ export class PackageBillingService {
                 const i = Math.floor(Math.random() * (legendList.length - 1));      
                 ebBillDto.legend = legendList[i].description ;
             }
-
+            
             if(!ebBillDto.note)
                 ebBillDto.note = Parameters.noteOffLine;    
                 
@@ -251,13 +273,41 @@ export class PackageBillingService {
        await this.ebPackageFileService.saveFile(buffer, ebPackageBill.packageId);
        ebPackageBill.cufd = ebCufdDto.cufd;
        //we save xml and bills
-       for (let [key, value] of mapBills) {                        
-            await this.ebBillFileService.saveXml(value.billId, mapXmls.get(key));
-            await this.ebBillService.update(value);
+       try {
+            for (let [key, value] of mapBills) {                      
+                await this.ebBillFileService.saveXml(value.billId, mapXmls.get(key));
+                await this.ebBillService.update(value);
+            }
+            
+        } catch (error) {
+
+            ebPackageBill.billStatusId = Constants.BillStatusSentError;
+
+            if(error.code === 'P2002')
+                ebPackageBill.statusDescription = 'Clave duplicada ' + error.meta.target.join('|');
+            else
+                ebPackageBill.statusDescription = error.toString();
+            await this.ebPackageBillService.update(ebPackageBill);
+            
+            const sendPackageResponseDto = new  SendPackageResponseDto()
+            sendPackageResponseDto.message =  ebPackageBill.statusDescription;
+            sendPackageResponseDto.statusDescription = ebPackageBill.statusDescription;
+            sendPackageResponseDto.statusCode = '902';
+            return sendPackageResponseDto;
+            /*if(error.code === 'P2002'){
+                throw new HttpException({
+                    status: HttpStatus.CONFLICT,
+                    error:  'Clave duplicada ' + error.meta.target.join('|'),
+                }, HttpStatus.CONFLICT, { cause: error });
+            } else {
+                throw new HttpException({
+                    status: HttpStatus.CONFLICT,
+                    error:  error,
+                }, HttpStatus.CONFLICT, { cause: error });
+            }*/
         }
        
-
-       const service = this.facturacionService.getService(ebPackageBill.modalityCode==Constants.ElectronicOnlineBilling?ebSectorDocumentDto.serviceFe:ebSectorDocumentDto.serviceFec);
+       const service = this.facturacionService.getService(ebPackageBill.modalityCode==Constants.ElectronicOnlineBilling?ebSectorDocumentDto.serviceFe:ebSectorDocumentDto.serviceFec);       
        let response = null;       
        if(ebPackageBill.emitteType == Constants.EmitterTypeMassive)
             response = await service.recepcionMasivaFactura(ebPackageBill, ebSystemDto, ebCuisDto.cuis, dataBase64, hash, ebPackageBill.modalityCode==Constants.ElectronicOnlineBilling?ebSectorDocumentDto.urlWsFe:ebSectorDocumentDto.urlWsFec);
@@ -267,7 +317,9 @@ export class PackageBillingService {
         let tag = 'ns2:recepcionPaqueteFacturaResponse'
         if(ebPackageBill.emitteType===Constants.EmitterTypeMassive) 
             tag = 'ns2:recepcionMasivaFacturaResponse'
-                   
+        
+        if(!response)
+        
        ebPackageBill.receptionCode = response[tag].RespuestaServicioFacturacion.codigoRecepcion;
        ebPackageBill.statusCode = response[tag].RespuestaServicioFacturacion.codigoEstado;
        ebPackageBill.statusDescription = response[tag].RespuestaServicioFacturacion.codigoDescripcion;
@@ -287,7 +339,8 @@ export class PackageBillingService {
        this.saveTransactions(ebPackageBill, sendPackageResponseDto, response.soapRequest, response.soapResponse, 'recepcionPaquete');       
        this.updateCodeStatusBill(sendPackageResponseDto.mensajesList, ebPackageBill, '901', 'PENDIENTE', Constants.BillStatusSentUnconfirmed);
        
-
+       idError = HttpStatus.ACCEPTED;
+       await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, ""); 
        return sendPackageResponseDto;
     }
 
@@ -335,23 +388,25 @@ export class PackageBillingService {
             else {
                 
                 if(mensajesList.numeroArchivo && Number(mensajesList.numeroArchivo)>=0){
-                    const cuf =files[Number(mensajesList.numeroArchivo)];                
-                    const ebBillDto = await this.ebBillService.findByCuf(cuf);
-                    if(ebBillDto){
-                        const tmp = await this.prismaService.ebBill.update({
-                            where: {
-                                billId: Number(ebBillDto.billId),
-                            },
-                            data: {                                
-                                billStatusId: Number(Constants.BillStatusSentError),
-                                statusCode: mensajesList.codigo,
-                                statusDescription: mensajesList.descripcion,
-                            },
-                        });
-                        filesObs.push(ebBillDto.billId);
-                        mensajesList.billId = ebBillDto.billId;
-                    }
+                    const cuf =files[Number(mensajesList.numeroArchivo)];
                     
+                    if(!mensajesList.advertencia || mensajesList.advertencia==='false'){
+                        const ebBillDto = await this.ebBillService.findByCuf(cuf);
+                        if(ebBillDto){
+                            const tmp = await this.prismaService.ebBill.update({
+                                where: {
+                                    billId: Number(ebBillDto.billId),
+                                },
+                                data: {                                
+                                    billStatusId: Number(Constants.BillStatusSentError),
+                                    statusCode: mensajesList.codigo,
+                                    statusDescription: mensajesList.descripcion,
+                                },
+                            });
+                            filesObs.push(ebBillDto.billId);
+                            mensajesList.billId = ebBillDto.billId;
+                        }
+                    }                                
                 }
 
             }
@@ -432,6 +487,14 @@ export class PackageBillingService {
     }
 
     async validatePackage(ebSystemDto:EbSystemDto,packageId:number, intend:number=1){
+        
+        const tranId = -1;
+        const userId = -1;
+        const serviceName = "package.validatePackage";
+        const paramIn = `packageId: ${packageId}|intend: ${intend}`;
+        let messageError = "OK";
+        let idError = 0;
+        
         const ebPackageBill = await this.ebPackageBillService.findById(packageId);
         const ebCuisDto = await this.billingCodeService.getCuis( ebSystemDto, ebPackageBill.sucursalCode, ebPackageBill.salePointCode, ebPackageBill.modalityCode, this.parameterService.getNow());
         const ebSectorDocumentDto = await this.ebSectorDocumentService.findById(ebPackageBill.sectorDocumentCode,);
@@ -447,6 +510,7 @@ export class PackageBillingService {
         if(ebPackageBill.emitteType===Constants.EmitterTypeMassive) 
             tag = 'ns2:validacionRecepcionMasivaFacturaResponse'
 
+        
         ebPackageBill.statusCode = response[tag].RespuestaServicioFacturacion.codigoEstado;
         ebPackageBill.statusDescription = response[tag].RespuestaServicioFacturacion.codigoDescripcion;
  
@@ -465,16 +529,23 @@ export class PackageBillingService {
         }
                         
         this.saveTransactions(ebPackageBill, sendPackageResponseDto, response.soapRequest, response.soapResponse, 'validacionPaquete');
-        this.updateCodeStatusBill(sendPackageResponseDto.mensajesList, ebPackageBill, '908', 'VALIDADO', Constants.BillStatusSent);
+        this.updateCodeStatusBill(sendPackageResponseDto.mensajesList, ebPackageBill, '908', 'VALIDADA', Constants.BillStatusSent);
+        
+        idError = HttpStatus.ACCEPTED;
+        await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, ""); 
         
         return sendPackageResponseDto;
     }
 
     async sendPackageCompleteCycle(ebSystemDto:EbSystemDto, sucursalCode:number, salePointCode:number, emitteType:number, sectorDocumentCode:string){
-        const listPackages = await this.createPackages(ebSystemDto,sucursalCode,salePointCode,emitteType,sectorDocumentCode);
-        
+        const listPackagesPending = await this.ebPackageBillService.findByStatus(0);
+
+        let listPackages = await this.createPackages(ebSystemDto,sucursalCode,salePointCode,emitteType,sectorDocumentCode);        
+        listPackages = [ ...listPackages, ...listPackagesPending ];
+
         return await Promise.all( listPackages.map( async item => {
             const respSend = await this.sendPackage(ebSystemDto, item.packageId);
+            
 
             if(respSend.statusCode == "901")
             {
@@ -487,7 +558,7 @@ export class PackageBillingService {
         }));
     }
 
-     splitarray(input, spacing)
+    splitarray(input, spacing)
     {
         var output = [];
         for (var i = 0; i < input.length; i += spacing)

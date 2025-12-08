@@ -153,7 +153,7 @@ export class NotaDebitoCreditoDescuento {
                   }
                 <leyenda>${ebBillDto.legend}</leyenda>
                 <usuario>${ebBillDto.user}</usuario>
-                <codigoDocumentoSector>24</codigoDocumentoSector>
+                <codigoDocumentoSector>47</codigoDocumentoSector>
             </cabecera>
             ${ebBillDto.details.map((item) => {
                 return `<detalle>

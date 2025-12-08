@@ -145,6 +145,28 @@ export class EbPackageBillService {
           return null;
     }
 
+    async findByStatus(statusId:number){
+        const list = await this.prismaService.ebPackageBill.findMany({
+            where: {
+                billStatusId: statusId
+            },
+            include: {
+              bills: {
+                include: {
+                    details: true
+                }
+              },
+            }
+        });
+
+        const listPackages =  list.map( ebPackageBill => {
+            const bills = ebPackageBill.bills.map(item => { return this.ebBillService.mapEbBillDto(item, item.details) } );          
+            return this.mapEbPackageBillDto(ebPackageBill, bills);
+        } );
+
+        return listPackages;
+    }
+
 
     mapEbPackageBillDto(ebPackageBill:ebPackageBill, bills:EbBillDto[]): EbPackageBillDto {
         const ebPackageBillDto = new EbPackageBillDto();

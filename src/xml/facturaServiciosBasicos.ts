@@ -24,8 +24,8 @@ export class FacturaServiciosBasicos {
                       ? `<codigoPuntoVenta>${ebBillDto.salePointCode}</codigoPuntoVenta>`
                       : '<codigoPuntoVenta xsi:nil="true"/>'
                   }
-                  <mes xsi:nil="true"/>
-                  <gestion xsi:nil="true"/>
+                  ${ebBillDto.month != null? `<mes>${ebBillDto.month}</mes>`:'<mes xsi:nil="true"/>'  }
+                  ${ebBillDto.year != null? `<gestion>${ebBillDto.year}</gestion>`:'<gestion xsi:nil="true"/>'  }                  
                   <ciudad xsi:nil="true"/>
                   <zona xsi:nil="true"/>
                   <numeroMedidor>${ebBillDto.meterNumber}</numeroMedidor>            
@@ -49,10 +49,10 @@ export class FacturaServiciosBasicos {
                       : '<numeroTarjeta xsi:nil="true"/>'
                   }
                   <montoTotal>${ebBillDto.amount.toFixed(2)}</montoTotal>
-                  <montoTotalSujetoIva>${ebBillDto.amountIva.toFixed(2)}</montoTotalSujetoIva>
+                  <montoTotalSujetoIva>${ebBillDto.amountIva.toFixed(2)}</montoTotalSujetoIva>                  
                   ${
-                    ebBillDto.billedPeriod != null
-                      ? `<consumoPeriodo>${ebBillDto.billedPeriod}</consumoPeriodo>`
+                    ebBillDto.consumptionPeriod != null
+                      ? `<consumoPeriodo>${ebBillDto.consumptionPeriod}</consumoPeriodo>`
                       : '<consumoPeriodo xsi:nil="true"/>'
                   }
                   ${
@@ -125,7 +125,6 @@ export class FacturaServiciosBasicos {
         dateEmiite= dateEmiite.replace('Z', '');
 
         const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
           <facturaComputarizadaServicioBasico xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                                     xsi:noNamespaceSchemaLocation="facturaComputarizadaServicioBasico.xsd">
               <cabecera>
@@ -142,7 +141,11 @@ export class FacturaServiciosBasicos {
                 ebBillDto.salePointCode != null
                   ? `<codigoPuntoVenta>${ebBillDto.salePointCode}</codigoPuntoVenta>`
                   : '<codigoPuntoVenta xsi:nil="true"/>'
-              }              
+              }   
+              ${ebBillDto.month != null? `<mes>${ebBillDto.month}</mes>`:'<mes xsi:nil="true"/>'  }
+              ${ebBillDto.year != null? `<gestion>${ebBillDto.year}</gestion>`:'<gestion xsi:nil="true"/>'  }                  
+              <ciudad xsi:nil="true"/>
+              <zona xsi:nil="true"/>           
               <numeroMedidor>${ebBillDto.meterNumber}</numeroMedidor>
               <fechaEmision>${dateEmiite}</fechaEmision>
               <nombreRazonSocial>${ebBillDto.billName}</nombreRazonSocial>
@@ -166,8 +169,8 @@ export class FacturaServiciosBasicos {
               <montoTotal>${ebBillDto.amount.toFixed(2)}</montoTotal>
               <montoTotalSujetoIva>${ebBillDto.amountIva.toFixed(2)}</montoTotalSujetoIva>
               ${
-                ebBillDto.billedPeriod != null
-                  ? `<consumoPeriodo>${ebBillDto.billedPeriod}</consumoPeriodo>`
+                ebBillDto.consumptionPeriod != null
+                  ? `<consumoPeriodo>${ebBillDto.consumptionPeriod}</consumoPeriodo>`
                   : '<consumoPeriodo xsi:nil="true"/>'
               }
               ${

@@ -132,23 +132,24 @@ export class NumberToLetters {
     const data = { numero: num, integers: Math.floor(num),
         cents: (((Math.round(num * 100)) - (Math.floor(num) * 100))),
         lettersCents: '',
-        lettersCurrencyPlural: 'Bs.',
-        lettersCurrencySingular: 'Bs.',
+        lettersCurrencyPlural: 'Bolivianos.',
+        lettersCurrencySingular: 'Bolivianos.',
         lettersCurrencyCents: '/100'
     };
 
     if (data.cents > 0) {
         data.lettersCents =  (function (obj){
-            return data.cents + data.lettersCurrencyCents;
-            /*if (data.cents == 1)
-                return obj.millions(data.cents) + data.lettersCurrencyCents;
+            //return data.cents.toFixed(2) + data.lettersCurrencyCents;
+            //return  data.cents  + data.lettersCurrencyCents;
+            if (data.cents < 10)
+                return '0' + data.cents + data.lettersCurrencyCents;
             else
-                return obj.millions(data.cents)  + data.lettersCurrencyCents;
-            */
+                return data.cents  + data.lettersCurrencyCents;
+            
             })(this);
     }
     else {
-      data.lettersCents = '0' + data.lettersCurrencyCents;
+      data.lettersCents = '00' + data.lettersCurrencyCents;
     }
 
     if(data.integers == 0)

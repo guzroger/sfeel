@@ -33,6 +33,7 @@ export class EbBillDto {
   exceptionDocument: number;
   billExternalCode: string;
   billedPeriod: string;
+  consumptionPeriod: string;
   billStatusId: number;
   packageId: number;
   billNameEmitter: string;
@@ -80,5 +81,9 @@ export class EbBillDto {
   tasaAlumbrado:number;
   otrasTasas:number;
   studentName:string;
+
+  month:string;
+  year:string;
+  annulled:string;
 
 }

@@ -91,6 +91,28 @@ export class BillController {
   }
 
   @ApiOperation({
+    summary: 'Send sendBill Massive to SIN',
+    description: 'Method for prepare send bill massive to SIN',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: SendBillResponseDto,
+  })
+  @ApiBody({ type: SendBillDto, description: 'Body' })
+  @Post('sendBillMassive')
+  async sendBillMassive( @Body() sendBillDto: SendBillDto,): Promise<SendBillResponseDto> {
+    const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit(
+      Parameters.codigoSistema, sendBillDto.business.nit,
+    );
+    const ebBillDto = await this.mapper.mapEbBillDto(sendBillDto, ebSystemDto);
+    if(!ebBillDto.emitteType)
+      ebBillDto.emitteType = Constants.EmitterTypeMassive;
+
+    return this.billService.sendBillMassive(ebBillDto, ebSystemDto);
+  }
+
+  @ApiOperation({
     summary: 'Send bill to SIN by id',
     description: 'Method for send bill to SIN by id',
   })
@@ -105,7 +127,7 @@ export class BillController {
     const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit(
       Parameters.codigoSistema, sendBillDto.nit,
     );
-  
+    
     const ebBillDto = await this.billService.getBill(ebSystemDto, sendBillDto.billId);
     this.mapper.setLegend(ebBillDto, ebSystemDto);
     
@@ -134,7 +156,7 @@ export class BillController {
     const ebBillDto = await this.mapper.mapSendNoteDtoToEbBillDto(sendNoteDto, ebBillDtoOriginal, ebSystemDto);
     
     const sendBillResponseDto = await this.billService.sendBill(ebBillDto, ebSystemDto);
-
+        
     if(sendBillResponseDto.statusCode === "908"){
       await this.billService.changeStatusAdjustedBill(ebBillDtoOriginal);
     }

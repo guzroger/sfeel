@@ -56,7 +56,7 @@ export class ManagerService {
                     const  events= await this.ebEventService.findEventsOpen(ebSystemDto.systemCode, ebSystemDto.nit, ebSucursalDto.sucursalCode, ebSalePointDto.salePointCode);                
                     for(const ebEventDto of events){
                         const respCloseEvent = await this.contingencyService.closeEvent(ebEventDto.eventId, ebEventDto.nit);
-                        if(respCloseEvent.eventId)
+                        if(respCloseEvent.event && respCloseEvent.event.eventId)
                             closedEvent=true;                        
                     }
                     if(closedEvent)

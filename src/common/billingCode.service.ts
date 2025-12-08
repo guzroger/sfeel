@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { EbCuisDto } from '../model/dto/ebCuis.dto';
 import { WsFacturacionCodigosService } from 'src/webservice/wsFacturacionCodigos.service';
 import { EbCuisService } from '../model/ebCuis.service';
@@ -7,6 +7,7 @@ import { EbCufdService } from '../model/ebCufd.service';
 import { EbSystemService } from '../model/ebSystem.service';
 import { EbSystemDto } from 'src/model/dto/ebSystem.dto';
 import { ParameterService } from './parameter.service';
+import { UtlDate } from './utl-date';
 
 @Injectable()
 export class BillingCodeService {
@@ -41,7 +42,7 @@ export class BillingCodeService {
     if (!verificarComunicaion) {
       throw new Error('Error Conexión');
     }
-
+    
     //Get the cuis from SIN
     const cuisResponse = await this.wsFacturacionCodigosService.cuis(
       ebSystemDto,
@@ -50,6 +51,18 @@ export class BillingCodeService {
       codigoModalidad,
     );
     let ebCuisDto = new EbCuisDto();
+    
+    if(!cuisResponse['ns2:cuisResponse'].RespuestaCuis.codigo && cuisResponse['ns2:cuisResponse'].RespuestaCuis.mensajesList){
+      if (Array.isArray(cuisResponse['ns2:cuisResponse'].RespuestaCuis.mensajesList,)) {
+        let message = "";
+        cuisResponse['ns2:cuisResponse'].RespuestaCuis.mensajesList.map(
+          (item) => {message = message + item.codigo + ' - ' + item.descripcion + ", ";},);
+        throw new HttpException(message, HttpStatus.CONFLICT);
+      } else {        
+        throw new HttpException(cuisResponse['ns2:cuisResponse'].RespuestaCuis.mensajesList.codigo + ' - ' + cuisResponse['ns2:cuisResponse'].RespuestaCuis.mensajesList.descripcion, HttpStatus.CONFLICT);
+      }
+    }
+    
 
     const expirationAt = this.parameterService.parseDate(
       cuisResponse['ns2:cuisResponse'].RespuestaCuis.fechaVigencia,
@@ -173,7 +186,6 @@ export class BillingCodeService {
     nitVerificar: string,
   ): Promise<boolean> {
     const verificarNitResponse = await this.wsFacturacionCodigosService.verificarNit(ebSystemDto, codigoSucursal, codigoModalidad,cuis,nitVerificar);
-    console.log(verificarNitResponse);
     if (verificarNitResponse['ns2:verificarNitResponse'].RespuestaVerificarNit.mensajesList.codigo === '986')
       return true;
     return false;

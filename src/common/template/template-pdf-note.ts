@@ -331,17 +331,18 @@ export class TemplatePdfNote implements TemplatePdf {
                   <table class="table-subtotal">
                     <tbody>
                       <tr>
-                            <td>Monto Total Original</td>
-                            <td>${(ebBillDto.amountTotalOriginal??0)}</td>
-                          </tr>
-                          <tr>
-                            <td>Descuento Adicional</td>
-                            <td>${ebBillDto.amountDiscountCreditDebit??0}</td>
-                          </tr>
-                          <tr>
-                            <td>Monto Total a Pagar</td>
-                            <td>${ebBillDto.amount??0}</td>
-                          </tr>
+                          <td>Monto Total Original</td>
+                          <td>${Number(ebBillDto.amountTotalOriginal??0).toFixed(2)}</td>
+                        </tr>
+                      ${ebBillDto.sectorDocumentCode==='47'?  `<tr>
+                          <td>Descuento Adicional</td>
+                          <td>${Number(ebBillDto.amountDiscountCreditDebit??0).toFixed(2)}</td>
+                        </tr>
+                      <tr>
+                          <td>Monto Total a Pagar</td>
+                          <td>${Number((ebBillDto.amountTotalOriginal??0) - (ebBillDto.amountDiscountCreditDebit??0)).toFixed(2)}</td>
+                        </tr>`:``}
+                          
                                  
                     </tbody>
                   </table>
@@ -385,21 +386,21 @@ export class TemplatePdfNote implements TemplatePdf {
                 <div class="flex-column">
                   <table class="table-subtotal">
                     <tbody>
-                        <tr>
-                            <td>Subtotal</td>
-                            <td>${(amountTotal??0)}</td>
+                        ${ebBillDto.sectorDocumentCode==='47'?  `<tr>
+                            <td>SubTotal</td>
+                            <td>${Number((amountTotal??0)).toFixed(2)}</td>
                           </tr>
                         <tr>
                             <td>Monto Descuento Debito Credito</td>
-                            <td>${(ebBillDto.amountDiscountCreditDebit??0)}</td>
-                          </tr>
+                            <td>${Number(ebBillDto.amountDiscountCreditDebit??0).toFixed(2)}</td>
+                          </tr>`:``}
                           <tr>
                             <td>Monto Total Devuelto</td>
-                            <td>${amountTotal - ebBillDto.amountDiscountCreditDebit??0}</td>
+                            <td>${Number((amountTotal??0) - (ebBillDto.amountDiscountCreditDebit??0)).toFixed(2)}</td>
                           </tr>
                           <tr>
                             <td>Monto Efectivo Debito Credito</td>
-                            <td>${ebBillDto.amountEffectiveCreditDebit??0}</td>
+                            <td>${Number(ebBillDto.amountEffectiveCreditDebit??0).toFixed(2)}</td>
                           </tr>                                   
                     </tbody>
                   </table>

@@ -9,7 +9,7 @@ export class TemplatePdfBill implements TemplatePdf {
     let dateEmiite = ebBillDto.dateEmitte.toISOString();
         dateEmiite= dateEmiite.replace('Z', '');
         dateEmiite= dateEmiite.replace('T', ' ');
-
+        dateEmiite= dateEmiite.substr(0, dateEmiite.indexOf('.') );
 
     const template = `<!DOCTYPE html>
     <html lang="en, id">
@@ -288,14 +288,16 @@ export class TemplatePdfBill implements TemplatePdf {
                 <p><b>Fecha:</b> ${dateEmiite}</p>
                 <p><b>Nombre/Razón Social :</b> ${ebBillDto.billName}</p>
                 ${ebBillDto.sectorDocumentCode==='13'? `<p><b>Dirección:</b> ${ebBillDto.address}</p>`: ``}
-                ${ebBillDto.sectorDocumentCode==='13'? `<p><b>Consumo Periodo:</b> ${ebBillDto.billedPeriod}</p>`: ``}
+                ${ebBillDto.sectorDocumentCode==='13'? `<p><b>Consumo Periodo:</b> ${ebBillDto.consumptionPeriod?ebBillDto.consumptionPeriod:''}</p>`: ``}
                 ${ebBillDto.sectorDocumentCode==='11'? `<p><b>Nombre Estudiante:</b> ${ebBillDto.studentName}</p>`: ``}
               </div>
               <div class="head client-data">
                 <p><b>NIT/CI/CEX:</b> ${ebBillDto.billDocument} ${ebBillDto.billComplement??''}</p>
-                <p><b>Cod. Cliente:</b> ${ebBillDto.clientCode}</p>
-                ${ebBillDto.sectorDocumentCode==='13'? `<p><b>Nro Meditor:</b> ${ebBillDto.meterNumber}</p>`: ``}
+                <p><b>Cod. Cliente:</b> ${ebBillDto.clientCode}</p>                
+                ${ebBillDto.sectorDocumentCode==='13'? `<p><b>Periodo Facturado:</b> ${ebBillDto.billedPeriod}</p>`: ``}
+                ${ebBillDto.beneficiarioLey1886? `<p><b>Beneficiario Ley:</b> ${ebBillDto.beneficiarioLey1886}</p>`: ``}
                 ${ebBillDto.sectorDocumentCode==='11'? `<p><b>Periodo Facturado:</b> ${ebBillDto.billedPeriod}</p>`: ``}
+                ${ebBillDto.sectorDocumentCode==='13'? `<p><b>Nro Meditor:</b> ${ebBillDto.meterNumber}</p>`: ``}
               </div>
             </div>
             <!-- invoice body-->
@@ -320,9 +322,9 @@ export class TemplatePdfBill implements TemplatePdf {
                           <td style="text-right ">${item.quantity??0}</td>
                           <td>${item.measure}</td>
                           <td>${item.description}</td>
-                          <td>${item.unitPrice??0}</td>
-                          <td>${item.amountDiscount??0}</td>
-                          <td>${item.subTotal??0}</td>
+                          <td>${(item.unitPrice??0).toFixed(2)}</td>
+                          <td>${(item.amountDiscount??0).toFixed(2)}</td>
+                          <td>${(item.subTotal??0).toFixed(2)}</td>
                           
                       </tr>`
                   } ).join(``)  }
@@ -330,7 +332,7 @@ export class TemplatePdfBill implements TemplatePdf {
                       ${ebBillDto.sectorDocumentCode==='13'?  `<tr>
                       <td style="text-right "></td>  
                       <td style="text-right "></td>
-                      <td style="text-right "></td>  
+                      <td style="text-right "></td> 
                       <td>Ajustes Sujetos a IVA 
                               ${ebBillDto.detalleAjusteSujetoIva?Object.keys(JSON.parse(ebBillDto.detalleAjusteSujetoIva)).map( (item)=> {
                                 return `<br>
@@ -340,35 +342,36 @@ export class TemplatePdfBill implements TemplatePdf {
                           </td>                          
                           <td style="text-right "></td>
                           <td style="text-right "></td>
-                          <td style="text-right ">${ebBillDto.ajusteSujetoIva}</td>
-                          
-                      </tr><tr>
+                          <td style="text-right ">${ebBillDto.ajusteSujetoIva.toFixed(2)}</td></tr>
+                      ${ebBillDto.tasaAseo?`    
+                      <tr>
                         <td style="text-right "></td>
                         <td style=" text-right "></td>
                         <td style=" text-right "></td>
                         <td>Tasa Aseo Urbano</td>                        
                         <td style=" text-right "></td>
                         <td style="text-right "></td>
-                        <td style=" text-right ">${ebBillDto.tasaAseo??0}</td>
-                        
-                    </tr><tr>
+                        <td style=" text-right ">${(ebBillDto.tasaAseo??0).toFixed(2)}</td>
+                        </tr>`:`` }
+                    ${ebBillDto.tasaAlumbrado?`<tr>
                           <td style="text-right "></td>
                           <td style=" text-right "></td>
                           <td style=" text-right "></td>
                           <td>Tasa Alumbrado</td>
                           <td style=" text-right "></td>
                           <td style="text-right "></td>
-                          <td style=" text-right ">${ebBillDto.tasaAlumbrado??0}</td>
-                          
-                      </tr><tr>
+                          <td style=" text-right ">${(ebBillDto.tasaAlumbrado??0).toFixed(2)}</td>                          
+                      </tr>`:`` }
+                      <tr>  
                         <td style=" text-right "></td>
                         <td style=" text-right "></td>
                         <td style="text-right "></td>  
                         <td>Otras Tasas</td>
                         <td style=" text-right "></td>
                         <td style="text-right "></td>
-                        <td style=" text-right ">${ebBillDto.otrasTasas??0}</td>                        
-                    </tr><tr>
+                        <td style=" text-right ">${(ebBillDto.otrasTasas??0).toFixed(2)}</td>                        
+                      </tr><tr>
+                      
                       <td style="text-right "></td>
                       <td style="text-right "></td>
                       <td style="text-right "></td>
@@ -381,9 +384,17 @@ export class TemplatePdfBill implements TemplatePdf {
                       </td>
                       <td style="text-right "></td>
                       <td style="text-right "></td>
-                      <td style="text-right ">${ebBillDto.otrosPagosNoSujetoIva}</td>
-                      
-                   </tr>`:``}
+                      <td style="text-right ">${(ebBillDto.otrosPagosNoSujetoIva).toFixed(2)}</td></tr>
+                      ${ebBillDto.montoDescuentoLey1886?`</tr><tr>
+                        <td style=" text-right "></td>
+                        <td style=" text-right "></td>
+                        <td style="text-right "></td>  
+                        <td>Descuento Ley 1886</td>
+                        <td style=" text-right "></td>
+                        <td style="text-right "></td>
+                        <td style=" text-right ">${(ebBillDto.montoDescuentoLey1886??0).toFixed(2)}</td>                        
+                      </tr><tr>`:`` }
+                      `:``}
                    </tbody>
               </table>
               <div class="flex-table">
@@ -402,58 +413,58 @@ export class TemplatePdfBill implements TemplatePdf {
                           </tr>
                           <tr>
                             <td>(-) Descuento</td>
-                            <td>${ebBillDto.amountDiscount??0}</td>
+                            <td>${(ebBillDto.amountDiscount??0).toFixed(2)}</td>
                           </tr>
                           <tr>
                             <td>SubTotal  a Pagar</td>
-                            <td>${ebBillDto.amount??0}</td>
+                            <td>${(ebBillDto.amount??0).toFixed(2)}</td>
                           </tr>
                           <tr>
                             <td>(-) Ajustes No Sujetos a IVA</td>
-                            <td>${ebBillDto.ajusteNoSujetoIva??0}</td>
+                            <td>${(ebBillDto.ajusteNoSujetoIva??0).toFixed(2)}</td>
                           </tr>
                           <tr>
                             <td>Monto Total a Pagar</td>
-                            <td>${(ebBillDto.amount??0) -  (ebBillDto.ajusteNoSujetoIva??0)}</td>
+                            <td>${((ebBillDto.amount??0) -  (ebBillDto.ajusteNoSujetoIva??0)).toFixed(2)}</td>
                           </tr>
                           <tr>
                             <td>(-) Tasas</td>
-                            <td>${(ebBillDto.tasaAseo??0) + (ebBillDto.tasaAlumbrado??0)+ (ebBillDto.otrasTasas??0)}</td>
+                            <td>${((ebBillDto.tasaAseo??0) + (ebBillDto.tasaAlumbrado??0)+ (ebBillDto.otrasTasas??0)).toFixed(2)}</td>
                           </tr>
                           <tr>
                             <td>(-) Otros Pagos no Sujetos a IVA</td>
-                            <td>${ebBillDto.otrosPagosNoSujetoIva??0}</td>
+                            <td>${(ebBillDto.otrosPagosNoSujetoIva??0).toFixed(2)}</td>
                           </tr>
                           <tr>
                             <td>(+) Ajustes No Sujetos a IVA</td>
-                            <td>${ebBillDto.ajusteNoSujetoIva??0}</td>
+                            <td>${(ebBillDto.ajusteNoSujetoIva??0).toFixed(2)}</td>
                           </tr>
                           <tr>
                             <td>Importe Credito Fiscal</td>
-                            <td>${(ebBillDto.amountIva) }</td>
+                            <td>${(ebBillDto.amountIva).toFixed(2) }</td>
                           </tr>`: `<tr>
                                       <td>Subtotal</td>
-                                      <td>${(ebBillDto.amount??0) + (ebBillDto.amountDiscount??0)}</td>
+                                      <td>${((ebBillDto.amount??0) + (ebBillDto.amountDiscount??0)).toFixed(2)}</td>
                                     </tr>
                                     <tr>
                                       <td>(-) Descuento</td>
-                                      <td>${ebBillDto.amountDiscount??0}</td>
+                                      <td>${(ebBillDto.amountDiscount??0).toFixed(2)}</td>
                                     </tr>
                                     <tr>
                                       <td>Total</td>
-                                      <td>${ebBillDto.amount??0}</td>
+                                      <td>${(ebBillDto.amount??0).toFixed(2)}</td>
                                     </tr>                                                              
                                     <tr>
                                       <td>Monto Gift Card</td>
-                                      <td>${ebBillDto.amountGiftCard??0}</td>
+                                      <td>${(ebBillDto.amountGiftCard??0).toFixed(2)}</td>
                                     </tr>
                                     <tr>
                                       <td>Monto a Pagar</td>
-                                      <td>${(ebBillDto.amount??0) - (ebBillDto.amountGiftCard??0)}</td>
+                                      <td>${((ebBillDto.amount??0) - (ebBillDto.amountGiftCard??0)).toFixed(2)}</td>
                                     </tr>
                                     <tr>
                                       <td>Importe Base Credito Fiscal</td>
-                                      <td>${ebBillDto.amountIva??0}</td>
+                                      <td>${(ebBillDto.amountIva??0).toFixed(2)}</td>
                                     </tr>` }
                                           
                     </tbody>
@@ -481,6 +492,7 @@ export class TemplatePdfBill implements TemplatePdf {
     let dateEmiite = ebBillDto.dateEmitte.toISOString();
         dateEmiite= dateEmiite.replace('Z', '');
         dateEmiite= dateEmiite.replace('T', ' ');
+        dateEmiite= dateEmiite.substr(0, dateEmiite.indexOf('.') );
 
     const template = `<!DOCTYPE html>
     <html lang="en, id">
@@ -710,6 +722,7 @@ export class TemplatePdfBill implements TemplatePdf {
                 <p><b>NIT/CI/CEX:</b> ${ebBillDto.billDocument} ${ebBillDto.billComplement??''}</p>
                 <p><b>Cod. Cliente:</b> ${ebBillDto.clientCode}</p>
                 ${ebBillDto.sectorDocumentCode==='11'? `<p><b>Periodo Facturado:</b> ${ebBillDto.billedPeriod}</p>`: ``}
+                ${ebBillDto.sectorDocumentCode==='13'? `<p><b>Consumo Periodo:</b> ${ebBillDto.consumptionPeriod}</p>`: ``}
               </div>
               
             </div>

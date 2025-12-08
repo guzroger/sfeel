@@ -3,7 +3,7 @@ import { IsDateString, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from
 
 export class CreateSucursalDto {
   @ApiProperty()
-  @IsString()
+  @IsNumber()
   sucursalCode:number;
   @ApiProperty()
   @IsString()

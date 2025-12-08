@@ -180,7 +180,7 @@ export class FacturaSectorEducativo {
                 }               
                 <leyenda>${ebBillDto.legend}</leyenda>
                 <usuario>${ebBillDto.user}</usuario>
-                <codigoDocumentoSector>1</codigoDocumentoSector>
+                <codigoDocumentoSector>11</codigoDocumentoSector>
             </cabecera>
             ${ebBillDto.details.map((item) => {
               return `<detalle>

@@ -7,8 +7,28 @@ import { EbDosificationDto } from './dto/ebDosification.dto';
 export class EbDosificationService {
     constructor(private prismaService: PrismaService) {}
 
-    async findValid(systemCode:string, nit:number,sectorDocumentCode:string, type:string, modalityCode:number ):Promise<EbDosificationDto>{
-        const event = await this.prismaService.ebDosification.findFirst(
+    async create(ebDosificationDto:EbDosificationDto){
+        const ebDosification = await this.prismaService.ebDosification.create({
+            data:{
+                code: ebDosificationDto.code,
+                sectorDocumentCode: ebDosificationDto.sectorDocumentCode,
+                begin: ebDosificationDto.begin,
+                last: ebDosificationDto.last,
+                current: ebDosificationDto.current,
+                status: Status.ACTIVE,
+                type: ebDosificationDto.type,
+                systemCode: ebDosificationDto.systemCode,
+                nit: ebDosificationDto.nit,
+                modalityCode: ebDosificationDto.modalityCode
+            }
+        });
+
+        return this.mapEbDosification(ebDosification);
+    }
+    
+    
+    async findValid(systemCode:string, nit:number,sectorDocumentCode:string, type:string, modalityCode:number, code:string = '' ):Promise<EbDosificationDto>{
+        let ebDosification = await this.prismaService.ebDosification.findFirst(
             {
                 where: {
                     systemCode: systemCode,
@@ -22,7 +42,24 @@ export class EbDosificationService {
                 orderBy: [ { current: 'desc'}]
             }
         );
-        return this.mapEbDosification(event);
+
+        if(!ebDosification){
+            const ebDosificationDto = new EbDosificationDto();
+            ebDosificationDto.sectorDocumentCode = sectorDocumentCode;
+            ebDosificationDto.begin = 1;
+            ebDosificationDto.last = 999999999;
+            ebDosificationDto.current = 1;
+            ebDosificationDto.nit = nit;
+            ebDosificationDto.modalityCode = modalityCode;
+            ebDosificationDto.type = type;
+            ebDosificationDto.systemCode = systemCode;
+            ebDosificationDto.code  = code 
+            
+            return this.create(ebDosificationDto);
+        }
+
+
+        return this.mapEbDosification(ebDosification);
     }
 
     async update(ebDosificationDto:EbDosificationDto) :Promise<EbDosificationDto>{

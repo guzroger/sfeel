@@ -1,5 +1,5 @@
-import { Body, Controller, Post } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Post, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CreatePackagesDto } from "./dto/createPackages.dto";
 import { Parameters } from "src/common/tools/parameters";
 import { EbSystemService } from "src/model/ebSystem.service";
@@ -8,6 +8,8 @@ import { SendPackage } from "./dto/sendPackage.dto";
 
 @ApiTags('package')
 @Controller('package')
+//@UseGuards(AuthGuard)
+//@ApiBearerAuth('JWT')
 export class PackageController {
     
     constructor(

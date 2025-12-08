@@ -25,10 +25,11 @@ export class EbBillService {
       }
       catch(error){}
     }
-
-    const tmp = await this.findByCuf(ebBillDto.cuf);
-    if (tmp != null) throw new ConflictException("Duplicate CUF");
-    console.log(ebBillDto);
+    if(ebBillDto.cuf){
+      const tmp = await this.findByCuf(ebBillDto.cuf);
+      if (tmp != null) throw new ConflictException("Duplicate CUF");
+    }
+        
     const ebBill = await this.prismaService.ebBill.create({
       data: {
         systemCode: ebBillDto.systemCode,
@@ -51,7 +52,7 @@ export class EbBillService {
         amountIva: ebBillDto.amountIva,
         amountDiscount: ebBillDto.amountDiscount,
         amountGiftCard: ebBillDto.amountGiftCard,
-        coinCode: ebBillDto.coinCode,
+        coinCode: "" + ebBillDto.coinCode,
         exchangeRate: ebBillDto.exchangeRate,
         legend: ebBillDto.legend,
         sectorDocumentCode: ebBillDto.sectorDocumentCode,
@@ -61,8 +62,7 @@ export class EbBillService {
         exceptionDocument: ebBillDto.exceptionDocument,
         billExternalCode: ebBillDto.billExternalCode,
         billedPeriod: ebBillDto.billedPeriod,
-        billStatusId: ebBillDto.billStatusId,
-        packageId: ebBillDto.packageId == null ? -1 : ebBillDto.packageId,
+        consumptionPeriod: ebBillDto.consumptionPeriod,
         billNameEmitter: ebBillDto.billNameEmitter,
         municipality: ebBillDto.municipality,
         receptionCode: ebBillDto.receptionCode,
@@ -94,7 +94,11 @@ export class EbBillService {
         tasaAseo:ebBillDto.tasaAseo,
         tasaAlumbrado:ebBillDto.tasaAlumbrado,
         otrasTasas:ebBillDto.otrasTasas,
-        studentName: ebBillDto.studentName
+        studentName: ebBillDto.studentName,
+        year: ebBillDto.year,
+        month: ebBillDto.month,
+        package: {connect: { packageId: ebBillDto.packageId? ebBillDto.packageId: -1 }},
+        billStatus: { connect: { billStatusId: ebBillDto.billStatusId? ebBillDto.billStatusId: 0  }}
       },
     });
 
@@ -163,9 +167,8 @@ export class EbBillService {
         documentTaxCode: ebBillDto.documentTaxCode,
         exceptionDocument: ebBillDto.exceptionDocument,
         billExternalCode: ebBillDto.billExternalCode,
-        billedPeriod: ebBillDto.billedPeriod,
-        billStatusId: ebBillDto.billStatusId,
-        packageId: Number(ebBillDto.packageId),
+        billedPeriod: ebBillDto.billedPeriod,        
+        consumptionPeriod: ebBillDto.consumptionPeriod,  
         billNameEmitter: ebBillDto.billNameEmitter,
         municipality: ebBillDto.municipality,
         receptionCode: ebBillDto.receptionCode,
@@ -197,7 +200,13 @@ export class EbBillService {
         tasaAseo:ebBillDto.tasaAseo,
         tasaAlumbrado:ebBillDto.tasaAlumbrado,
         otrasTasas:ebBillDto.otrasTasas,
-        studentName: ebBillDto.studentName
+        studentName: ebBillDto.studentName,
+        year: ebBillDto.year,
+        month: ebBillDto.month,
+        annulled: ebBillDto.annulled,
+        package: {connect: { packageId: Number(ebBillDto.packageId) }},
+        billStatus: { connect: { billStatusId: ebBillDto.billStatusId }}
+
       },
     });
 
@@ -440,6 +449,7 @@ async findAll(pageOptionsDto:BillPageOptionsDto, ebSystemDto:EbSystemDto) {
     ebBillDto.exceptionDocument = ebBill.exceptionDocument;
     ebBillDto.billExternalCode = ebBill.billExternalCode;
     ebBillDto.billedPeriod = ebBill.billedPeriod;
+    ebBillDto.consumptionPeriod = ebBill.consumptionPeriod;
     ebBillDto.billStatusId = ebBill.billStatusId;
     ebBillDto.packageId = Number(ebBill.packageId);
     ebBillDto.billNameEmitter = ebBill.billNameEmitter;
@@ -478,6 +488,9 @@ async findAll(pageOptionsDto:BillPageOptionsDto, ebSystemDto:EbSystemDto) {
     ebBillDto.tasaAlumbrado = ebBill.tasaAlumbrado;
     ebBillDto.otrasTasas = ebBill.otrasTasas;
     ebBillDto.studentName = ebBill.studentName;
+    ebBillDto.year = ebBill.year;
+    ebBillDto.month = ebBill.month;
+    ebBillDto.annulled = ebBill.annulled;
 
     if (details != null && details.length > 0) {
       ebBillDto.details = details.map((item) => {

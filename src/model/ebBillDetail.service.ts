@@ -120,6 +120,7 @@ export class EbBillDetailService {
     ebBillDetailDto.description = ebBillDetail.description;
     ebBillDetailDto.quantity = ebBillDetail.quantity;
     ebBillDetailDto.measureCode = ebBillDetail.measureCode;
+    ebBillDetailDto.measure = ebBillDetail.measure;
 
     ebBillDetailDto.measure = ebBillDetail.measure;
     ebBillDetailDto.unitPrice = ebBillDetail.unitPrice;

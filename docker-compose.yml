@@ -1,7 +1,8 @@
-version: '3.8'
+#version: '3.8'
 
 services:
   sfeel_db:
+    container_name: sfeeldb
     image: postgres:13
     ports:
       - 5433:5432
@@ -13,7 +14,32 @@ services:
       - /opt/docker/db_sfeel:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
     networks:
-      - sfeeldb_lan
-      
+      - mired
+
+  sfeel_api:
+    container_name: sfeel_api
+    build: ./
+    ports:
+      - 3001:3000
+    environment:
+      DB_HOST: sfeeldb
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: miclave
+      DB_DATABASE: sfeeldb
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    networks:
+      - mired 
+    labels:
+      - "traefik.http.routers.sfeel.rule=Host(`fel.hexagonbolivia.com`)"
+      - "traefik.http.routers.sfeel.entrypoints=websecure"
+      - "traefik.http.routers.sfeel.tls.certresolver=myresolver"
+      - "traefik.http.routers.sfeel.tls=true"
+      - "traefik.http.services.sfeel-service.loadbalancer.server.port=3000"
+      - "traefik.docker.network=traefik-net"
+          
 networks:
-  sfeeldb_lan:
+  mired:
+    external: true

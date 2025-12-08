@@ -28,7 +28,7 @@ export class WsEventosSignificativos {
         })
         .then((data) => {
         if (data != null) {
-            console.log(data.value);
+            
             this.URL_WS_FS = data.value;
         }
         });
@@ -62,7 +62,7 @@ export class WsEventosSignificativos {
                         </siat:registroEventoSignificativo>
                         </soapenv:Body>
                     </soapenv:Envelope>`;
-                    console.log(xml);
+                    
         return this.soapRequestService.callService(
             this.URL_WS_FS,
             xml,

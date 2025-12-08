@@ -14,6 +14,7 @@ import { DocumentBillService } from './document-bill.service';
 import { MapperService } from './mapper.service';
 import { BillXmlService } from './bill-xml.service';
 import { CommonController } from './common.controller';
+import { AppLogService } from './app-log.service';
 
 
 @Global()
@@ -31,9 +32,10 @@ import { CommonController } from './common.controller';
     BillingCodeService,
     DocumentBillService,
     MapperService,
-    BillXmlService
+    BillXmlService,
+    AppLogService
   ],
   exports: [SoapRequestService, ParameterService, LoggerInterceptor, 
-    SignerXmlService, HealthService, MailerService, BillingCodeService, DocumentBillService, MapperService, BillXmlService],
+    SignerXmlService, HealthService, MailerService, BillingCodeService, DocumentBillService, MapperService, BillXmlService, AppLogService],
 })
 export class CommonModule {}

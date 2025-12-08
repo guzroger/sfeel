@@ -1,11 +1,14 @@
-import { BadGatewayException, BadRequestException, Body, Controller, Get, Post, Query } from "@nestjs/common";
+import { BadGatewayException, BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from "@nestjs/common";
 import { ContingencyService } from './contingency.service';
 import { CreateEventDto } from './dto/createEvent.dto';
 import { CloseEventDto } from "./dto/closeEvent.dto";
-import { ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 
-@ApiTags('Contingency')
+@ApiTags('event')
 @Controller('event')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT')
 export class ContingencyController {
     constructor(private contingencyService:ContingencyService){}
 

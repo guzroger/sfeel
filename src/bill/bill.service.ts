@@ -33,6 +33,7 @@ import { ConfigService } from '@nestjs/config';
 import { Constants } from 'src/common/enum/constants.enum';
 import { Algorithm } from 'src/common/tools/algorithm';
 import { BillXmlService } from 'src/common/bill-xml.service';
+import { AppLogService } from 'src/common/app-log.service';
 
 
 @Injectable()
@@ -56,7 +57,8 @@ export class BillService {
     private documentBillService:DocumentBillService,
     private mailerService:MailerService,
     private configService:ConfigService,
-    private billXmlService:BillXmlService
+    private billXmlService:BillXmlService,
+    private appLogService:AppLogService
   ) {}
   
   findAll(billPageOptionsDto:BillPageOptionsDto, ebSystemDto:EbSystemDto) {
@@ -95,12 +97,89 @@ export class BillService {
       throw new BadRequestException("Bill reference no validate");
   }
 
-
-  async sendBill( ebBillDto: EbBillDto, ebSystemDto: EbSystemDto,): Promise<SendBillResponseDto> {
+  async sendBillMassive(ebBillDto: EbBillDto, ebSystemDto: EbSystemDto,): Promise<SendBillResponseDto> {
     const sendBillResponseDto = new SendBillResponseDto();
+
+    const tranId = -1;
+    const userId = -1;
+    const serviceName = "bill.sendBillMassive";
+    const paramIn = `billNumber: ${ebBillDto.billNumber}|emitteType: ${ebBillDto.emitteType}|dateEmitte: ${ebBillDto.dateEmitte}|billDocument: ${ebBillDto.billDocument}`;
+    let messageError = "OK";
+    let idError = 0;
     
     if ( ebBillDto.billStatusId === Constants.BillStatusSent && ebBillDto.receptionCode != null ) {
-      throw new ResponseFilterException( 'The bill has already sent, Date ' + ebBillDto.dateEmitte, HttpStatus.CONFLICT, );
+      messageError= 'The bill has already sent, Date ' + ebBillDto.dateEmitte;
+      idError = HttpStatus.CONFLICT;
+      await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
+      throw new ResponseFilterException( messageError, idError );
+    }
+    
+    try{  
+      //We find the type of emission by the point sale
+      ebBillDto.systemCode = ebSystemDto.systemCode;
+      const ebSucursalDto = await this.ebSucursalService.findBySucursalCode( ebBillDto.sucursalCode, ebSystemDto.systemId,);
+      const ebSalePointDto = await this.ebSalePointService.findBySalePointCode( ebBillDto.salePointCode != null ? ebBillDto.salePointCode : 0, ebSucursalDto.id );
+      const ebSectorDocumentDto = await this.ebSectorDocumentService.findById(ebBillDto.sectorDocumentCode,);
+      ebBillDto.modalityCode = ebSalePointDto.modalityCode;
+      ebBillDto.municipality = ebSucursalDto.municipality;    
+      ebBillDto.documentTaxCode = ebSectorDocumentDto.documentTaxCode;
+  
+      if(ebBillDto.documentTaxCode==Constants.DocumentTaxCodeBillWithoitIva)
+        ebBillDto.amountIva = 0;
+  
+      if(!ebBillDto.dateEmitte)
+        ebBillDto.dateEmitte = await this.synDateHourService.sisdate( ebSystemDto.systemCode, ebSystemDto.nit,);
+      
+      //We get the CUIS
+      const ebCuisDto = await this.billingCodeService.getCuis( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,);
+      let ebCufdDto = null;
+
+      if(!ebBillDto.billNumber){
+        const ebDosificationDto = await this.ebDosificationService.findValid(ebSystemDto.systemCode, ebSystemDto.nit, 
+          '0', Constants.TypeDosification, ebBillDto.modalityCode);
+        if(!ebDosificationDto){
+          messageError= "Dosification not found, is necessary for to number.";
+          idError = HttpStatus.CONFLICT;
+          await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
+          throw new ConflictException(messageError);
+        }
+          
+        ebBillDto.billNumber = ebDosificationDto.current;
+        ebDosificationDto.current = ebDosificationDto.current + 1;
+        await this.ebDosificationService.update(ebDosificationDto);
+      }
+      
+      ebBillDto.emitteType = Constants.EmitterTypeMassive
+      ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, this.parameterService.getNow(),ebCuisDto.cuis,);
+      messageError= "Bill offilne Masive.";
+      idError = HttpStatus.ACCEPTED;
+      await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
+      return this.sendBillOffLine( ebBillDto, ebSystemDto, ebCufdDto,  Constants.EmitterTypeMassive);
+      
+    }
+    catch(e){  
+      messageError= e.message;
+      idError = HttpStatus.CONFLICT;
+      await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");    
+      throw e;
+    }
+    
+  }
+  async sendBill( ebBillDto: EbBillDto, ebSystemDto: EbSystemDto,): Promise<SendBillResponseDto> {
+    const sendBillResponseDto = new SendBillResponseDto();
+
+    const tranId = -1;
+    const userId = -1;
+    const serviceName = " ";
+    const paramIn = `billNumber: ${ebBillDto.billNumber}|emitteType: ${ebBillDto.emitteType}|dateEmitte: ${ebBillDto.dateEmitte}|billDocument: ${ebBillDto.billDocument}`;
+    let messageError = "OK";
+    let idError = 0;
+    
+    if ( ebBillDto.billStatusId === Constants.BillStatusSent && ebBillDto.receptionCode != null ) {
+      messageError= 'The bill has already sent, Date ' + ebBillDto.dateEmitte;
+      idError = HttpStatus.CONFLICT;
+      await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
+      throw new ResponseFilterException( serviceName + ":" +  messageError, idError );
     }
     
     try{  
@@ -128,25 +207,34 @@ export class BillService {
       if(!ebBillDto.billNumber){
         const ebDosificationDto = await this.ebDosificationService.findValid(ebSystemDto.systemCode, ebSystemDto.nit, 
           '0', Constants.TypeDosification, ebBillDto.modalityCode);
-        if(!ebDosificationDto)
-          throw new ConflictException("Dosification not found, is necessary for to number.");
-
+        if(!ebDosificationDto){
+          messageError= "Dosification not found, is necessary for to number.";
+          idError = HttpStatus.CONFLICT;
+          await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
+          throw new ConflictException(messageError);
+        }
+          
         ebBillDto.billNumber = ebDosificationDto.current;
         ebDosificationDto.current = ebDosificationDto.current + 1;
         await this.ebDosificationService.update(ebDosificationDto);
       }
       
-      if(ebBillDto.emitteType == Constants.EmitterTypeMassive)
+      if(ebBillDto.emitteType === Constants.EmitterTypeMassive)
       {
         if(!ebBillDto.dateEmitte)
           ebBillDto.dateEmitte = await this.synDateHourService.sisdate( ebSystemDto.systemCode, ebSystemDto.nit,);
   
-        ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,ebCuisDto.cuis,);
+        ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, this.parameterService.getNow(),ebCuisDto.cuis,);
+        idError = HttpStatus.ACCEPTED;
+        messageError = "Bill Offline Massive";
+        await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
         return this.sendBillOffLine( ebBillDto, ebSystemDto, ebCufdDto,  Constants.EmitterTypeMassive);
       }
-  
+      
+
       //We search if exits event
       const events = await this.ebEventService.findEvent(ebSystemDto.systemCode, ebSystemDto.nit, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.sectorDocumentCode, ebBillDto.dateEmitte);
+      
       if(events.length>0)
       {
         ebCufdDto = await this.billingCodeService.getCufdById(events[0].cufdEvent);
@@ -161,19 +249,24 @@ export class BillService {
 
           await this.ebDosificationService.update(ebDosificationDto);
         }
-        
+
+        idError = HttpStatus.ACCEPTED;
+        messageError = "Bill Offline Event";
+        await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
         return this.sendBillOffLine( ebBillDto, ebSystemDto, ebCufdDto, Constants.EmitterTypeContingency);
       }
-      
       
       //we check connection
       const check = await this.checkConnection(ebBillDto);
-      if(!check)
+      if(!check)  
       {
         ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,ebCuisDto.cuis,);
+        idError = HttpStatus.ACCEPTED;
+        messageError = "Bill Offline Event";
+        await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
         return this.sendBillOffLine( ebBillDto, ebSystemDto, ebCufdDto, Constants.EmitterTypeContingency);
       }
-  
+      
       ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,ebCuisDto.cuis,);    
   
       //we set the document exception, If NIT not valid = 1
@@ -228,8 +321,6 @@ export class BillService {
       let tagResponse = 'ns2:recepcionFacturaResponse';
       if(ebBillDto.documentTaxCode==3)
         tagResponse='ns2:recepcionDocumentoAjusteResponse'
-  
-      
       
       sendBillResponseDto.statusCode = response[tagResponse].RespuestaServicioFacturacion.codigoEstado;
       sendBillResponseDto.statusDescription = response[tagResponse].RespuestaServicioFacturacion.codigoDescripcion;
@@ -267,7 +358,8 @@ export class BillService {
       }
     }
     catch(e){
-      if(e.status == 502 ){
+      //console.log(e);
+      if(e.status == 502 ){                
         let dateEmiite = ebBillDto.dateEmitte.toISOString();
         dateEmiite= dateEmiite.replace('Z', '');
 
@@ -283,6 +375,10 @@ export class BillService {
 
         const ebCuisDto = await this.billingCodeService.getCuis( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,);
         const ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,ebCuisDto.cuis,);
+
+        idError = HttpStatus.GATEWAY_TIMEOUT;
+        messageError = "Bill Offline Timeout";
+        await this.appLogService.create(serviceName, paramIn, "",tranId, userId, idError, messageError, "");
         return this.sendBillOffLine( ebBillDto, ebSystemDto, ebCufdDto, Constants.EmitterTypeContingency);
       }
       ebBillDto.statusCode = String(e.status);
@@ -354,7 +450,10 @@ export class BillService {
     const ebSectorDocumentDto = await this.ebSectorDocumentService.findById(ebBillDto.sectorDocumentCode,);
 
     ebBillDto.emitteType = emitteType;
-    ebBillDto.note = Parameters.noteOffLine;    
+    if(emitteType === Constants.EmitterTypeMassive)
+      ebBillDto.note = Parameters.noteOnLine;    
+    if(emitteType === Constants.EmitterTypeContingency)
+      ebBillDto.note = Parameters.noteOffLine;
     
     if(!ebBillDto.dateEmitte)
       ebBillDto.dateEmitte = await this.synDateHourService.sisdate( ebSystemDto.systemCode, ebSystemDto.nit,);
@@ -417,6 +516,9 @@ export class BillService {
     if(!ebBillDto)
       throw new NotFoundException("Bill data not found");
 
+    if(ebBillDto.annulled && ebBillDto.annulled==="1")
+      throw new NotFoundException("The bill cannot be cancelled");
+
     const ebCuisDto = await this.billingCodeService.getCuis( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, this.parameterService.getNow());
     const ebCufdDto = await this.billingCodeService.getCufd( ebSystemDto, ebBillDto.sucursalCode, ebBillDto.salePointCode, ebBillDto.modalityCode, ebBillDto.dateEmitte,ebCuisDto.cuis,);
     const ebSectorDocumentDto = await this.ebSectorDocumentService.findById(ebBillDto.sectorDocumentCode,); 
@@ -434,6 +536,7 @@ export class BillService {
     if(resp[tagResponse].RespuestaServicioFacturacion.codigoEstado==='905')
     {
       ebBillDto.billStatusId = Constants.BillStatusAnnulled
+      ebBillDto.annulled = "1";
     }
 
     let ebBillDtoSave = await this.ebBillService.update(ebBillDto); 
@@ -462,7 +565,7 @@ export class BillService {
 
   async getPdfBill(ebSystemDto: EbSystemDto, billId:number, type:string){
     const ebBillDto = await this.ebBillService.findById(billId, true);
-    console.log(ebBillDto);
+    
     if(!ebBillDto)
       throw new NotFoundException("Bill data not found");
     
@@ -622,11 +725,25 @@ export class BillService {
     const bill = await this.documentBillService.getBillPdf(ebBillDto, ebSystemDto, ebSucursalDto, null);
     const iBillFileDto = await this.ebBillFileService.findById(billId);
 
+    let dateEmiite = ebBillDto.dateEmitte.toISOString();
+    dateEmiite= dateEmiite.replace('Z', '');
+    dateEmiite= dateEmiite.replace('T', ' ');
+    dateEmiite= dateEmiite.substr(0, dateEmiite.indexOf('.') );
+
+    let message = "";
+    if(ebBillDto.statusCode === '908' && ebBillDto.statusDescription === 'REVERSION DE ANULACION CONFIRMADA')
+      message= `Señor/Señora/Señores <b>${ebBillDto.billName}</b>: <br><br> Su factura/nota Nro. <b>${ebBillDto.billNumber}</b> <br> CUF:${ebBillDto.cuf} <br> Emitida en fecha ${dateEmiite}, <b>fue restablecida</b> <br><br> Que tenga buen dia.`
+    else if(ebBillDto.statusCode === '908')
+      message=`Señor/Señora/Señores <b>${ebBillDto.billName}</b>: <br><br> Su factura/nota Nro. <b>${ebBillDto.billNumber}</b> <br> CUF: ${ebBillDto.cuf}  <br> Emitida en fecha ${dateEmiite}, ya esta disponible <br><br> Que tenga buen dia.`;
+    else if(ebBillDto.statusCode === '905')
+      message= `Señor/Señora/Señores <b>${ebBillDto.billName}</b>: <br><br> Su factura/nota Nro. <b>${ebBillDto.billNumber}</b> <br> CUF:${ebBillDto.cuf} <br> Emitida en fecha ${dateEmiite}, fue anulada por <b>POR ERROR DE EMISION</b> <br><br> Que tenga buen dia.`
+
+
     const dto: SendMailDto = {
       from: { name: this.configService.get<string>('APP_NAME'), address: this.configService.get<string>('DEFAULT_MAIL_FROM')},
       recipients: [ { name: ebBillDto.billName,  address: ebBillDto.email }],
       subject: "Factura " + this.configService.get<string>('APP_NAME'), 
-      html: 'Sistema de facturación', 
+      html: message, 
       attachments: [ {filename: billId + ".pdf" , content:  bill.bill ,     encoding: 'base64'},
                      {filename: billId + ".xml" , content:  iBillFileDto.xml  }      ]
 

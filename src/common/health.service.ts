@@ -17,7 +17,9 @@ export class HealthService {
             const c = await this.health.check([ () => this.http.pingCheck('Internet', Parameters.urlPingInternet ) ]);
             if(c.info['Internet'].status == 'up')
                 return true;
-        }catch(err) {}
+        }catch(err) {
+          console.log(err);
+        }
         return false;
       
       }
@@ -28,7 +30,9 @@ export class HealthService {
             const c = await this.health.check([  () => this.http.pingCheck('SIN', Parameters.urlPingSin) ]);
             if(c.info['SIN'].status == 'up')
                 return true;
-        }catch(err) {}
+        }catch(err) {
+          console.log(err);
+        }
         return false;
       
       }

@@ -196,7 +196,7 @@ export class SynchronizationService {
       ebSystemDto,
       ebCuisDto.cuis,
       Constants.SincronizarParametricaTipoEmision,
-      Constants.UnidadMedida,
+      Constants.TipoEmision,
       salePoint
     );
 

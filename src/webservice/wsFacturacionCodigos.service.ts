@@ -31,7 +31,7 @@ export class WsFacturacionCodigosService {
       })
       .then((data) => {
         if (data != null) {
-          console.log(data.value);
+          
           this.URL_WS_FS = data.value;
         }
       });

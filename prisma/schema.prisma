@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,11 +10,11 @@ datasource db {
 model SeUser {
   id            Int      @id @default(autoincrement())
   name          String
-  email         String   @unique
   password      String
   salePointCode Int
-  ebSystem      EbSystem @relation(fields: [systemId], references: [id])
   systemId      Int      @map("system_id")
+  email         String   @unique
+  ebSystem      EbSystem @relation(fields: [systemId], references: [id])
 
   @@map("se_user")
 }
@@ -50,10 +47,10 @@ model EbSystem {
   modalityCode Int          @map("modality_code")
   createdAt    DateTime     @default(now()) @map("created_at")
   updatedAt    DateTime     @updatedAt @map("updated_at")
-  status       Status       @default(value: ACTIVE)
-  image        Bytes?       @db.ByteA
-  tokens       EbToken[]
+  status       Status       @default(ACTIVE)
+  image        Bytes?
   sucursals    EbSucursal[]
+  tokens       EbToken[]
   users        SeUser[]
 
   @@unique([systemCode, nit])
@@ -67,8 +64,8 @@ model EbToken {
   expirationAt DateTime @map("expiration_at")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
-  system       EbSystem @relation(fields: [systemId], references: [id])
   systemId     Int      @map("system_id")
+  system       EbSystem @relation(fields: [systemId], references: [id])
 
   @@map("eb_token")
 }
@@ -82,12 +79,12 @@ model EbSucursal {
   phone        String?
   municipality String?
   city         String?
-  status       Status        @default(value: ACTIVE)
+  status       Status        @default(ACTIVE)
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
-  system       EbSystem      @relation(fields: [systemId], references: [id])
   systemId     Int           @map("system_id")
   sale_point   EbSalePoint[]
+  system       EbSystem      @relation(fields: [systemId], references: [id])
 
   @@map("eb_sucursal")
 }
@@ -98,11 +95,11 @@ model EbSalePoint {
   description   String
   modalityCode  Int        @map("modality_code")
   typeSalePoint Int        @map("type_sale_point")
-  status        Status     @default(value: ACTIVE)
+  status        Status     @default(ACTIVE)
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
-  sucursal      EbSucursal @relation(fields: [sucursalId], references: [id])
   sucursalId    Int        @map("sucursal_id")
+  sucursal      EbSucursal @relation(fields: [sucursalId], references: [id])
 
   @@map("eb_sale_point")
 }
@@ -114,7 +111,7 @@ model EbCuis {
   nit           BigInt
   sucursalCode  Int      @map("sucursal_code")
   salePointCode Int      @map("sale_point_code")
-  status        Status   @default(value: ACTIVE)
+  status        Status   @default(ACTIVE)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -129,7 +126,7 @@ model EbCufd {
   sucursalCode  Int      @map("sucursal_code")
   salePointCode Int      @map("sale_point_code")
   controlCode   String   @map("control_code")
-  status        Status   @default(value: ACTIVE)
+  status        Status   @default(ACTIVE)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -153,7 +150,7 @@ model SynCatalogue {
   nit         BigInt
   description String
   createdAt   DateTime @default(now()) @map("created_at")
-  visible     Status   @default(value: ACTIVE)
+  visible     Status   @default(ACTIVE)
 
   @@id([code, type, systemCode, nit])
   @@map("syn_catalogue")
@@ -162,11 +159,12 @@ model SynCatalogue {
 model EbHomologationCatalogue {
   code            String
   type            String
-  systemCode      String   @map("system_code")
+  systemCode      String    @map("system_code")
   nit             BigInt
-  codeHomologated String   @map("code_homologated")
+  codeHomologated String    @map("code_homologated")
   description     String?
-  createdAt       DateTime @default(now()) @map("created_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  validateType    DataType? @map("validate_type")
 
   @@id([code, type, systemCode, nit])
   @@map("eb_homologation_catalogue")
@@ -246,96 +244,96 @@ model ebPackageBill {
 }
 
 model ebPackageFile {
-  packageId BigInt   @map("bill_id")
-  file      Bytes?   @db.ByteA
+  packageId BigInt   @id @map("package_id")
+  file      Bytes?
   createdAt DateTime @default(now()) @map("created_at")
 
-  @@id([packageId])
   @@map("eb_package_file")
 }
 
 model ebBillStatus {
   billStatusId Int             @id @map("bill_status_id")
   description  String
-  packages     ebPackageBill[]
   ebBills      ebBill[]
+  packages     ebPackageBill[]
 
   @@map("eb_bill_status")
 }
 
 model ebBill {
-  billId               BigInt         @id @default(autoincrement()) @map("bill_id")
-  systemCode           String         @map("system_code")
-  cuf                  String?        @unique
-  cufd                 String?
-  billNumber           Int            @map("bill_number")
-  nitEmitter           BigInt         @map("nit_emitter")
-  sucursalCode         Int            @map("sucursal_code")
-  salePointCode        Int            @map("sale_point_code")
-  dateEmitte           DateTime?      @map("date_emitte")
-  billName             String         @map("bill_name")
-  documentType         String         @map("document_type")
-  billDocument         String         @map("bill_document")
-  billComplement       String?        @map("bill_complement")
-  address              String?
-  clientCode           String         @map("client_code")
-  paymentMethod        String         @map("payment_method")
-  cardNumber           String?        @map("card_number")
-  amount               Float
-  amountIva            Float          @map("amount_iva")
-  amountDiscount       Float?         @map("amount_discount")
-  amountGiftCard       Float?         @map("amount_gift_card")
-  coinCode             String         @map("coin_code")
-  exchangeRate         Float          @map("exchange_rate")
-  legend               String?
-  sectorDocumentCode   String         @map("sector_document_code")
-  modalityCode         Int            @map("modality_code")
-  emitteType           Int            @map("emitte_type")
-  documentTaxCode      Int            @map("document_tax_code")
-  exceptionDocument    Int?           @map("exception_documnet")
-  billExternalCode     String         @map("bill_external_code")
-  billedPeriod         String?        @map("billed_period")
-  billStatusId         Int            @default(0) @map("bill_status")
-  packageId            BigInt         @map("package_id")
-  billNameEmitter      String         @map("bill_name_emitter")
-  municipality         String
-  receptionCode        String?        @map("recception_code")
-  statusCode           String?        @map("status_code")
-  statusDescription    String?        @map("status_description")
-  reasonAnnulationCode String?        @map("reason_annulation_code")
-  cafc                 String?
-  email                String?
-  qr                   String?
-  note                 String?
-  eventId              Int?           @map("event_id")
-  createdAt            DateTime       @default(now()) @map("created_at")
-  details              ebBillDetail[]
-  package              ebPackageBill  @relation(fields: [packageId], references: [packageId])
-  billStatus           ebBillStatus   @relation(fields: [billStatusId], references: [billStatusId])
-
-  addressBuyer          String? @map("address_buyer")
-  placeDestination      String? @map("place_destination")
-  codeCountry           String? @map("code_country")
-  additionalInformation String? @map("additional_information")
-
-  billNumberRef              Int?      @map("bill_number_ref")
-  cufRef                     String?   @map("cuf_ref")
-  dateEmitteRef              DateTime? @map("date_emitte_ref")
-  billIdRef                  BigInt?   @map("bill_id_ref")
-  amountTotalOriginal        Float?    @map("amount_total_original")
-  amountTotalReturned        Float?    @map("amount_total_returned")
-  amountDiscountCreditDebit  Float?    @map("amount_discount_credit_debit")
-  amountEffectiveCreditDebit Float?    @map("amount_effective_credit_debit")
-  user                       String?
-
-  meterNumber                  String? @map("meter_number")
-  beneficiarioLey1886          String? @map("beneficiario_ley_1886")
-  montoDescuentoLey1886        Float?  @map("monto_descuento_ley_1886")
-  montoDescuentoTarifaDignidad Float?  @map("monto_desc_tarifa_dig")
-  tasaAseo                     Float?  @map("tasa_aseo")
-  tasaAlumbrado                Float?  @map("tasa_alumbrado")
-  otrasTasas                   Float?  @map("otras_tasas")
-  studentName                  String? @map("student_name")
+  billId                       BigInt         @id @default(autoincrement()) @map("bill_id")
+  systemCode                   String         @map("system_code")
+  cuf                          String?        @unique
+  cufd                         String?
+  billNumber                   Int            @map("bill_number")
+  nitEmitter                   BigInt         @map("nit_emitter")
+  sucursalCode                 Int            @map("sucursal_code")
+  salePointCode                Int            @map("sale_point_code")
+  dateEmitte                   DateTime?      @map("date_emitte")
+  billName                     String         @map("bill_name")
+  documentType                 String         @map("document_type")
+  billDocument                 String         @map("bill_document")
+  billComplement               String?        @map("bill_complement")
+  address                      String?
+  clientCode                   String         @map("client_code")
+  paymentMethod                String         @map("payment_method")
+  cardNumber                   String?        @map("card_number")
+  amount                       Float
+  amountIva                    Float          @map("amount_iva")
+  amountDiscount               Float?         @map("amount_discount")
+  amountGiftCard               Float?         @map("amount_gift_card")
+  coinCode                     String         @map("coin_code")
+  exchangeRate                 Float          @map("exchange_rate")
+  legend                       String?
+  sectorDocumentCode           String         @map("sector_document_code")
+  modalityCode                 Int            @map("modality_code")
+  emitteType                   Int            @map("emitte_type")
+  documentTaxCode              Int            @map("document_tax_code")
+  exceptionDocument            Int?           @map("exception_document")
+  billExternalCode             String         @map("bill_external_code")
+  billedPeriod                 String?        @map("billed_period")
+  billStatusId                 Int            @default(0) @map("bill_status")
+  packageId                    BigInt         @map("package_id")
+  billNameEmitter              String         @map("bill_name_emitter")
+  municipality                 String
+  receptionCode                String?        @map("recception_code")
+  statusCode                   String?        @map("status_code")
+  statusDescription            String?        @map("status_description")
+  reasonAnnulationCode         String?        @map("reason_annulation_code")
+  cafc                         String?
+  email                        String?
+  qr                           String?
+  note                         String?
+  eventId                      Int?           @map("event_id")
+  createdAt                    DateTime       @default(now()) @map("created_at")
+  addressBuyer                 String?        @map("address_buyer")
+  placeDestination             String?        @map("place_destination")
+  codeCountry                  String?        @map("code_country")
+  additionalInformation        String?        @map("additional_information")
+  billNumberRef                Int?           @map("bill_number_ref")
+  cufRef                       String?        @map("cuf_ref")
+  dateEmitteRef                DateTime?      @map("date_emitte_ref")
+  billIdRef                    BigInt?        @map("bill_id_ref")
+  amountTotalOriginal          Float?         @map("amount_total_original")
+  amountTotalReturned          Float?         @map("amount_total_returned")
+  amountDiscountCreditDebit    Float?         @map("amount_discount_credit_debit")
+  amountEffectiveCreditDebit   Float?         @map("amount_effective_credit_debit")
+  user                         String?
+  beneficiarioLey1886          String?        @map("beneficiario_ley_1886")
+  meterNumber                  String?        @map("meter_number")
+  montoDescuentoTarifaDignidad Float?         @map("monto_desc_tarifa_dig")
+  montoDescuentoLey1886        Float?         @map("monto_descuento_ley_1886")
+  otrasTasas                   Float?         @map("otras_tasas")
+  tasaAlumbrado                Float?         @map("tasa_alumbrado")
+  tasaAseo                     Float?         @map("tasa_aseo")
+  studentName                  String?        @map("student_name")
+  consumptionPeriod            String?        @map("consumption_period")
+  month                        String?        @map("month")
+  year                         String?        @map("year")
+  annulled                     String?        @map("annulled")
+  billStatus                   ebBillStatus   @relation(fields: [billStatusId], references: [billStatusId])
+  package                      ebPackageBill  @relation(fields: [packageId], references: [packageId])
+  details                      ebBillDetail[]
 
   @@map("eb_bill")
 }
@@ -366,11 +364,10 @@ model ebBillDetail {
 }
 
 model ebBillFile {
-  billId    BigInt   @map("bill_id")
+  billId    BigInt   @id @map("bill_id")
   xml       String
   createdAt DateTime @default(now()) @map("created_at")
 
-  @@id([billId])
   @@map("eb_bill_file")
 }
 
@@ -410,8 +407,8 @@ model ebSectorDocument {
   description     String
   urlWsFe         String @map("url_ws")
   urlWsFec        String @map("url_ws_fec")
-  xsdFe           Bytes? @map("xsd_fe") @db.ByteA
-  xsdFec          Bytes? @map("xsd_fec") @db.ByteA
+  xsdFe           Bytes? @map("xsd_fe")
+  xsdFec          Bytes? @map("xsd_fec")
   methodFe        String @map("method_fe")
   methodFec       String @map("method_fec")
   serviceFe       String @map("service_fe")
@@ -425,10 +422,10 @@ model appCertificate {
   id              Int             @id @default(autoincrement())
   systemCode      String          @map("system_code")
   nit             BigInt
-  certificate     Bytes?          @db.ByteA
-  certificateType CertificateType @default(value: PRIMARY_KEY) @map("certificate_type")
-  typeStorage     StorageType     @default(value: TEXT) @map("type_storage")
-  status          Status          @default(value: ACTIVE)
+  certificate     Bytes?
+  certificateType CertificateType @default(PRIMARY_KEY) @map("certificate_type")
+  typeStorage     StorageType     @default(TEXT) @map("type_storage")
+  status          Status          @default(ACTIVE)
   createdAt       DateTime        @default(now()) @map("created_at")
   expirationAt    DateTime        @map("expiration_at")
   idRef           Int?            @map("id_ref")
@@ -462,13 +459,28 @@ model ebDosification {
   begin              Int    @map("begin_")
   last               Int    @map("last_")
   current            Int    @map("current_")
-  status             Status @default(value: ACTIVE)
+  status             Status @default(ACTIVE)
   type               String @map("type_")
   systemCode         String @map("system_code")
   nit                BigInt
-  modalityCode       Int    @map("modality_code") @default(0)
+  modalityCode       Int    @default(0) @map("modality_code")
 
   @@map("eb_dosification")
+}
+
+model appLog {
+  logId    BigInt   @id @default(autoincrement()) @map("log_id")
+  service  String
+  paramIn  String   @map("param_in")
+  paramOut String   @map("param_out")
+  dateTran DateTime @map("date_tran")
+  tranId   BigInt   @map("tran_id")
+  userId   Int      @map("user_Id")
+  errorId  Int      @map("error_id")
+  message  String
+  ipClient String   @map("ip_client")
+
+  @@map("app_log")
 }
 
 enum Status {
@@ -485,4 +497,9 @@ enum StorageType {
   P12
   X509
   TEXT
+}
+
+enum DataType {
+  NUMBER
+  STRING
 }

@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateEventDto {
     @ApiProperty()
@@ -27,12 +27,14 @@ export class CreateEventDto {
     @IsNotEmpty()
     description:string;
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsString()
+    @IsOptional()
     cafc:string;
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsBoolean()
+    @IsOptional()
     selfManageable:boolean;
 
     @ApiProperty()

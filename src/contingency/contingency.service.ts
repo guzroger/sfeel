@@ -33,6 +33,7 @@ export class ContingencyService {
         const ebSystemDto =  await this.ebSystemService.findBySystemCodeAndNit(Parameters.codigoSistema, createEventDto.nit);
         
         const beginAt = this.parameterService.parseDate(createEventDto.beginAt);
+        console.log(createEventDto);
         
         const events = await this.ebEventService.findEvent(ebSystemDto.systemCode, ebSystemDto.nit, createEventDto.sucursalCode, createEventDto.salePointCode, createEventDto.sectorDocumentCode, beginAt);
         let eventRegistered = false;
@@ -170,17 +171,23 @@ export class ContingencyService {
 
     async queryEvents(dateBegin:Date, dateEnd:Date, sucursalCode:number, salePointCode:number, nit:number):Promise<any> {
         const ebSystemDto =  await this.ebSystemService.findBySystemCodeAndNit(Parameters.codigoSistema, nit);
-        const events = await this.ebEventService.findEvents(Parameters.codigoSistema, nit, sucursalCode, salePointCode, dateBegin, dateEnd);
+        if(dateBegin && dateEnd) {
+            const events = await this.ebEventService.findEvents(Parameters.codigoSistema, nit, sucursalCode, salePointCode, dateBegin, dateEnd);
 
-
-        return {
+            return {
             "statusCode": 200,
             "statusDescription": "OK",
             "message": "OK",
             "events" : events.map( item => {
                     return this.returnEvent(item);
                     })};
+        }
+        else
+            throw new ConflictException("Error input data");
+
+
         
+    
     }
 
     returnEvent(ebEventDto:EbEventDto) {
