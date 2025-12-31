@@ -85,5 +85,6 @@ export class EbBillDto {
   month:string;
   year:string;
   annulled:string;
+  voidMotive:string;
 
 }

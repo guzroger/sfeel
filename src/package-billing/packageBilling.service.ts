@@ -318,11 +318,11 @@ export class PackageBillingService {
         if(ebPackageBill.emitteType===Constants.EmitterTypeMassive) 
             tag = 'ns2:recepcionMasivaFacturaResponse'
         
-        if(!response)
+        //if(!response)
         
-       ebPackageBill.receptionCode = response[tag].RespuestaServicioFacturacion.codigoRecepcion;
-       ebPackageBill.statusCode = response[tag].RespuestaServicioFacturacion.codigoEstado;
-       ebPackageBill.statusDescription = response[tag].RespuestaServicioFacturacion.codigoDescripcion;
+        ebPackageBill.receptionCode = response[tag].RespuestaServicioFacturacion.codigoRecepcion;
+        ebPackageBill.statusCode = response[tag].RespuestaServicioFacturacion.codigoEstado;
+        ebPackageBill.statusDescription = response[tag].RespuestaServicioFacturacion.codigoDescripcion;
 
        if(ebPackageBill.statusCode==='901')
         ebPackageBill.billStatusId = Constants.BillStatusSentUnconfirmed;

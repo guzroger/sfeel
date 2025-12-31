@@ -214,7 +214,7 @@ export class MapperService {
     async mapEbBillDto(sendBillDto: SendBillDto, ebSystemDto:EbSystemDto):Promise<EbBillDto> {
         
         const ebHomologationCatalogue = await this.ebHomologationCatalogueService.findById(sendBillDto.customer.documentType, ebSystemDto.systemCode, ebSystemDto.nit, Constants.TipoDocumentoIdentidad);
-        if(ebHomologationCatalogue.validateType){
+        if(ebHomologationCatalogue && ebHomologationCatalogue.validateType){
             if(ebHomologationCatalogue.validateType===DataType.NUMBER){
                 //!/[a-zA-Z]/.test('12.33?');
                 if(! /^\d+$/.test(sendBillDto.customer.document))

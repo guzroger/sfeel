@@ -510,8 +510,9 @@ export class BillService {
       return ebBillDto
   }
 
-  async voidBill(ebSystemDto: EbSystemDto, billId:number){
+  async voidBill(ebSystemDto: EbSystemDto, billId:number, voidMotive:string){
     const ebBillDto = await this.ebBillService.findById(billId);
+    ebBillDto.voidMotive = voidMotive;
     
     if(!ebBillDto)
       throw new NotFoundException("Bill data not found");

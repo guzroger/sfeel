@@ -147,7 +147,7 @@ export class WsFacturacionServiciosBasicos implements WsFacturacionService {
                               <cuis>${cuis}</cuis>
                               <nit>${ebSystemDto.nit}</nit>
                               <tipoFacturaDocumento>${ebBillDto.documentTaxCode}</tipoFacturaDocumento>
-                              <codigoMotivo>${ebBillDto.modalityCode}</codigoMotivo>
+                              <codigoMotivo>${ebBillDto.voidMotive}</codigoMotivo>
                               <cuf>${ebBillDto.cuf}</cuf>
                             </SolicitudServicioAnulacionFactura>
                         </siat:anulacionFactura>

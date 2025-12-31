@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { WsFacturacionCompraVentaService } from './wsFacturacionCompraVenta.service';
 import { WsFacturacionElectronicaService } from './wsFacturacionElectronica.service';
 import { WsFacturacionService } from "./WsFacturacion.service";
-import { WsFacturacionDocumentoAjusteService } from "./wsFacturacionDocumentoAjusteService";
+import { WsFacturacionDocumentoAjusteService } from "./wsFacturacionDocumentoAjuste.service";
 import { WsFacturacionServiciosBasicos } from "./wsFacturacionServiciosBasicos.service";
 
 @Injectable()

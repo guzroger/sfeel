@@ -172,9 +172,9 @@ export class BillController {
   @ApiParam({ name : "nit"})
   @ApiParam({ name : "id"})
   @Put('voidBill/:nit/:id')
-  async voidBill(@Param() param:any){
+  async voidBill(@Param() param:any, @Body('voidMotive') voidMotive:string){
     const ebSystemDto = await this.ebSystemService.findBySystemCodeAndNit( Parameters.codigoSistema,param.nit,);
-    return this.billService.voidBill(ebSystemDto, param.id);
+    return this.billService.voidBill(ebSystemDto, param.id, voidMotive);
   }
 
   @ApiOperation({

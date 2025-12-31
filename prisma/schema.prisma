@@ -43,7 +43,7 @@ model EbSystem {
   id           Int          @id @default(autoincrement())
   systemCode   String       @map("system_code")
   nit          BigInt
-  business     String
+  business     String       @db.VarChar(100)
   modalityCode Int          @map("modality_code")
   createdAt    DateTime     @default(now()) @map("created_at")
   updatedAt    DateTime     @updatedAt @map("updated_at")
@@ -73,12 +73,12 @@ model EbToken {
 model EbSucursal {
   id           Int           @id @default(autoincrement())
   sucursalCode Int           @map("sucursal_code")
-  description  String
+  description  String        @db.VarChar(100)
   modalityCode Int           @map("modality_code")
-  address      String?
-  phone        String?
-  municipality String?
-  city         String?
+  address      String?       @db.VarChar(200)
+  phone        String?       @db.VarChar(20)
+  municipality String?       @db.VarChar(50)
+  city         String?       @db.VarChar(500)
   status       Status        @default(ACTIVE)
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
@@ -92,7 +92,7 @@ model EbSucursal {
 model EbSalePoint {
   id            Int        @id @default(autoincrement())
   salePointCode Int        @map("sale_point_code")
-  description   String
+  description   String     @db.VarChar(100)
   modalityCode  Int        @map("modality_code")
   typeSalePoint Int        @map("type_sale_point")
   status        Status     @default(ACTIVE)
@@ -105,9 +105,9 @@ model EbSalePoint {
 }
 
 model EbCuis {
-  cuis          String   @id
+  cuis          String   @id @db.VarChar(100)
   expirationAt  DateTime @map("expiration_at")
-  systemCode    String   @map("system_code")
+  systemCode    String   @map("system_code") @db.VarChar(100)
   nit           BigInt
   sucursalCode  Int      @map("sucursal_code")
   salePointCode Int      @map("sale_point_code")
@@ -119,13 +119,13 @@ model EbCuis {
 }
 
 model EbCufd {
-  cufd          String   @id
+  cufd          String   @id @db.VarChar(100)
   expirationAt  DateTime @map("expiration_at")
-  systemCode    String   @map("system_code")
+  systemCode    String   @map("system_code") @db.VarChar(100)
   nit           BigInt
   sucursalCode  Int      @map("sucursal_code")
   salePointCode Int      @map("sale_point_code")
-  controlCode   String   @map("control_code")
+  controlCode   String   @map("control_code") @db.VarChar(50)
   status        Status   @default(ACTIVE)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
@@ -136,7 +136,7 @@ model EbCufd {
 model SynDateHour {
   dateSystem DateTime @map("date_system")
   dateSin    DateTime @map("date_sin")
-  systemCode String   @map("system_code")
+  systemCode String   @map("system_code") @db.VarChar(100)
   nit        BigInt
 
   @@id([dateSystem, systemCode, nit])
@@ -144,11 +144,11 @@ model SynDateHour {
 }
 
 model SynCatalogue {
-  code        String
-  type        String
-  systemCode  String   @map("system_code")
+  code        String   @db.VarChar(50)
+  type        String   @db.VarChar(50)
+  systemCode  String   @map("system_code") @db.VarChar(100)
   nit         BigInt
-  description String
+  description String   @db.VarChar(200)
   createdAt   DateTime @default(now()) @map("created_at")
   visible     Status   @default(ACTIVE)
 
@@ -157,12 +157,12 @@ model SynCatalogue {
 }
 
 model EbHomologationCatalogue {
-  code            String
-  type            String
-  systemCode      String    @map("system_code")
+  code            String    @db.VarChar(50)
+  type            String    @db.VarChar(50)
+  systemCode      String    @map("system_code") @db.VarChar(100)
   nit             BigInt
-  codeHomologated String    @map("code_homologated")
-  description     String?
+  codeHomologated String    @map("code_homologated") @db.VarChar(50)
+  description     String?   @db.VarChar(200)
   createdAt       DateTime  @default(now()) @map("created_at")
   validateType    DataType? @map("validate_type")
 
@@ -171,8 +171,8 @@ model EbHomologationCatalogue {
 }
 
 model SynInvoiceLegend {
-  activityCode String   @map("activity_code")
-  description  String
+  activityCode String   @map("activity_code") @db.VarChar(50)
+  description  String   @db.VarChar(300)
   systemCode   String   @map("system_code")
   nit          BigInt
   createdAt    DateTime @default(now()) @map("created_at")
@@ -182,11 +182,11 @@ model SynInvoiceLegend {
 }
 
 model SynProductService {
-  productCode  String   @map("product_code")
-  systemCode   String   @map("system_code")
+  productCode  String   @map("product_code") @db.VarChar(50)
+  systemCode   String   @map("system_code") @db.VarChar(100)
   nit          BigInt
-  activityCode String   @map("activity_code")
-  description  String
+  activityCode String   @map("activity_code") @db.VarChar(50)
+  description  String   @db.VarChar(500)
   createdAt    DateTime @default(now()) @map("created_at")
 
   @@id([productCode, systemCode, nit, activityCode])
@@ -194,12 +194,12 @@ model SynProductService {
 }
 
 model EbHomologationProductService {
-  productCode     String   @map("product_code")
-  systemCode      String   @map("system_code")
+  productCode     String   @map("product_code") @db.VarChar(50)
+  systemCode      String   @map("system_code") @db.VarChar(100)
   nit             BigInt
-  activityCode    String   @map("activity_code")
-  codeHomologated String   @map("code_homologated")
-  description     String?
+  activityCode    String   @map("activity_code") @db.VarChar(50)
+  codeHomologated String   @map("code_homologated") @db.VarChar(50)
+  description     String?  @db.VarChar(200)
   createdAt       DateTime @default(now()) @map("created_at")
 
   @@id([productCode, systemCode, nit, activityCode])
@@ -207,12 +207,12 @@ model EbHomologationProductService {
 }
 
 model SynActivity {
-  activityCode       String   @map("activity_code")
-  systemCode         String   @map("system_code")
+  activityCode       String   @map("activity_code") @db.VarChar(50)
+  systemCode         String   @map("system_code") @db.VarChar(100)
   nit                BigInt
-  sectorDocumentCode String   @map("sector_document_code")
-  activityType       String   @map("activity_type")
-  description        String?
+  sectorDocumentCode String   @map("sector_document_code") @db.VarChar(10)
+  activityType       String   @map("activity_type") @db.VarChar(30)
+  description        String?  @db.VarChar(200)
   createdAt          DateTime @default(now()) @map("created_at")
 
   @@id([activityCode, systemCode, nit, sectorDocumentCode, activityType])
@@ -221,21 +221,21 @@ model SynActivity {
 
 model ebPackageBill {
   packageId          BigInt       @id @default(autoincrement()) @map("package_id")
-  cufd               String?
+  cufd               String?      @db.VarChar(100)
   billStatusId       Int          @default(0) @map("bill_status_id")
   nitEmitter         BigInt       @map("nit_emitter")
   sucursalCode       Int          @map("sucursal_code")
   salePointCode      Int          @map("sale_point_code")
   emitteType         Int          @map("emitte_type")
   modalityCode       Int          @map("modality_code")
-  sectorDocumentCode String       @map("sector_document_code")
+  sectorDocumentCode String       @map("sector_document_code") @db.VarChar(2)
   documentTaxCode    Int          @map("document_tax_code")
-  receptionCode      String?      @map("recception_code")
-  statusCode         String?      @map("status_code")
-  statusDescription  String?      @map("status_description")
-  eventCode          String?      @map("event_code")
-  cafc               String?
-  systemCode         String       @map("system_code")
+  receptionCode      String?      @map("recception_code") @db.VarChar(100)
+  statusCode         String?      @map("status_code") @db.VarChar(10)
+  statusDescription  String?      @map("status_description") @db.VarChar(200)
+  eventCode          String?      @map("event_code") @db.VarChar(50)
+  cafc               String?      @db.VarChar(50)
+  systemCode         String       @map("system_code") @db.VarChar(100)
   createdAt          DateTime     @default(now()) @map("created_at")
   bills              ebBill[]
   billStatus         ebBillStatus @relation(fields: [billStatusId], references: [billStatusId])
@@ -253,7 +253,7 @@ model ebPackageFile {
 
 model ebBillStatus {
   billStatusId Int             @id @map("bill_status_id")
-  description  String
+  description  String          @db.VarChar(30)
   ebBills      ebBill[]
   packages     ebPackageBill[]
 
@@ -262,75 +262,75 @@ model ebBillStatus {
 
 model ebBill {
   billId                       BigInt         @id @default(autoincrement()) @map("bill_id")
-  systemCode                   String         @map("system_code")
-  cuf                          String?        @unique
-  cufd                         String?
+  systemCode                   String         @map("system_code") @db.VarChar(100)
+  cuf                          String?        @unique @db.VarChar(100)
+  cufd                         String?        @db.VarChar(100)
   billNumber                   Int            @map("bill_number")
   nitEmitter                   BigInt         @map("nit_emitter")
   sucursalCode                 Int            @map("sucursal_code")
   salePointCode                Int            @map("sale_point_code")
   dateEmitte                   DateTime?      @map("date_emitte")
-  billName                     String         @map("bill_name")
-  documentType                 String         @map("document_type")
-  billDocument                 String         @map("bill_document")
-  billComplement               String?        @map("bill_complement")
-  address                      String?
-  clientCode                   String         @map("client_code")
-  paymentMethod                String         @map("payment_method")
-  cardNumber                   String?        @map("card_number")
+  billName                     String         @map("bill_name") @db.VarChar(100)
+  documentType                 String         @map("document_type") @db.VarChar(50)
+  billDocument                 String         @map("bill_document") @db.VarChar(20)
+  billComplement               String?        @map("bill_complement") @db.VarChar(5)
+  address                      String?        @db.VarChar(300)
+  clientCode                   String         @map("client_code") @db.VarChar(50)
+  paymentMethod                String         @map("payment_method") @db.VarChar(50)
+  cardNumber                   String?        @map("card_number") @db.VarChar(20)
   amount                       Float
   amountIva                    Float          @map("amount_iva")
   amountDiscount               Float?         @map("amount_discount")
   amountGiftCard               Float?         @map("amount_gift_card")
-  coinCode                     String         @map("coin_code")
+  coinCode                     String         @map("coin_code") @db.VarChar(50)
   exchangeRate                 Float          @map("exchange_rate")
-  legend                       String?
-  sectorDocumentCode           String         @map("sector_document_code")
+  legend                       String?        @db.VarChar(300)
+  sectorDocumentCode           String         @map("sector_document_code") @db.VarChar(2)
   modalityCode                 Int            @map("modality_code")
   emitteType                   Int            @map("emitte_type")
   documentTaxCode              Int            @map("document_tax_code")
   exceptionDocument            Int?           @map("exception_document")
-  billExternalCode             String         @map("bill_external_code")
-  billedPeriod                 String?        @map("billed_period")
+  billExternalCode             String         @map("bill_external_code") @db.VarChar(50)
+  billedPeriod                 String?        @map("billed_period") @db.VarChar(30)
   billStatusId                 Int            @default(0) @map("bill_status")
   packageId                    BigInt         @map("package_id")
-  billNameEmitter              String         @map("bill_name_emitter")
-  municipality                 String
-  receptionCode                String?        @map("recception_code")
-  statusCode                   String?        @map("status_code")
-  statusDescription            String?        @map("status_description")
-  reasonAnnulationCode         String?        @map("reason_annulation_code")
-  cafc                         String?
-  email                        String?
-  qr                           String?
-  note                         String?
+  billNameEmitter              String         @map("bill_name_emitter") @db.VarChar(100)
+  municipality                 String         @db.VarChar(100)
+  receptionCode                String?        @map("recception_code") @db.VarChar(100)
+  statusCode                   String?        @map("status_code") @db.VarChar(10)
+  statusDescription            String?        @map("status_description") @db.VarChar(200)
+  reasonAnnulationCode         String?        @map("reason_annulation_code") @db.VarChar(5)
+  cafc                         String?        @db.VarChar(50)
+  email                        String?        @db.VarChar(50)
+  qr                           String?        @db.VarChar(200)
+  note                         String?        @db.VarChar(200)
   eventId                      Int?           @map("event_id")
   createdAt                    DateTime       @default(now()) @map("created_at")
-  addressBuyer                 String?        @map("address_buyer")
-  placeDestination             String?        @map("place_destination")
-  codeCountry                  String?        @map("code_country")
-  additionalInformation        String?        @map("additional_information")
+  addressBuyer                 String?        @map("address_buyer") @db.VarChar(200)
+  placeDestination             String?        @map("place_destination") @db.VarChar(200)
+  codeCountry                  String?        @map("code_country") @db.VarChar(50)
+  additionalInformation        String?        @map("additional_information") @db.VarChar(100)
   billNumberRef                Int?           @map("bill_number_ref")
-  cufRef                       String?        @map("cuf_ref")
+  cufRef                       String?        @map("cuf_ref") @db.VarChar(100)
   dateEmitteRef                DateTime?      @map("date_emitte_ref")
   billIdRef                    BigInt?        @map("bill_id_ref")
   amountTotalOriginal          Float?         @map("amount_total_original")
   amountTotalReturned          Float?         @map("amount_total_returned")
   amountDiscountCreditDebit    Float?         @map("amount_discount_credit_debit")
   amountEffectiveCreditDebit   Float?         @map("amount_effective_credit_debit")
-  user                         String?
-  beneficiarioLey1886          String?        @map("beneficiario_ley_1886")
-  meterNumber                  String?        @map("meter_number")
+  user                         String?        @db.VarChar(50)
+  beneficiarioLey1886          String?        @map("beneficiario_ley_1886") @db.VarChar(50)
+  meterNumber                  String?        @map("meter_number") @db.VarChar(50)
   montoDescuentoTarifaDignidad Float?         @map("monto_desc_tarifa_dig")
   montoDescuentoLey1886        Float?         @map("monto_descuento_ley_1886")
   otrasTasas                   Float?         @map("otras_tasas")
   tasaAlumbrado                Float?         @map("tasa_alumbrado")
   tasaAseo                     Float?         @map("tasa_aseo")
-  studentName                  String?        @map("student_name")
-  consumptionPeriod            String?        @map("consumption_period")
-  month                        String?        @map("month")
-  year                         String?        @map("year")
-  annulled                     String?        @map("annulled")
+  studentName                  String?        @map("student_name") @db.VarChar(100)
+  consumptionPeriod            String?        @map("consumption_period") @db.VarChar(10)
+  month                        String?        @map("month") @db.VarChar(2)
+  year                         String?        @map("year") @db.VarChar(5)
+  annulled                     String?        @map("annulled") @db.VarChar(2)
   billStatus                   ebBillStatus   @relation(fields: [billStatusId], references: [billStatusId])
   package                      ebPackageBill  @relation(fields: [packageId], references: [packageId])
   details                      ebBillDetail[]

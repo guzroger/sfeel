@@ -5,7 +5,7 @@ import { WsFacturacionCompraVentaService } from './wsFacturacionCompraVenta.serv
 import { WsEventosSignificativos } from './wsEventosSignificativos.service';
 import { FacturacionService } from './facturacion.service';
 import { WsFacturacionElectronicaService } from './wsFacturacionElectronica.service';
-import { WsFacturacionDocumentoAjusteService } from './wsFacturacionDocumentoAjusteService';
+import { WsFacturacionDocumentoAjusteService } from './wsFacturacionDocumentoAjuste.service';
 import { WsFacturacionOperacionesService } from './wsFacturacionOperaciones.service';
 import { WsFacturacionServiciosBasicos } from './wsFacturacionServiciosBasicos.service';
 
