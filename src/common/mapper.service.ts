@@ -260,8 +260,10 @@ export class MapperService {
         ebBillDto.year = sendBillDto.billData.year;
         ebBillDto.month = sendBillDto.billData.month;
 
-        if(!ebBillDto.billedPeriod)
+        if(!ebBillDto.billedPeriod && sendBillDto.billData.year && sendBillDto.billData.month)
             ebBillDto.billedPeriod = sendBillDto.billData.year + '-' + sendBillDto.billData.month;
+        else if(!ebBillDto.billedPeriod && ebBillDto.dateEmitte)
+            ebBillDto.billedPeriod = ebBillDto.dateEmitte.getFullYear() + '-' + ("" + ebBillDto.dateEmitte.getMonth()).padStart(2, '0');
 
         if(ebBillDto.amount==0)
             throw new ConflictException("El total de la factura no puede ser 0");
